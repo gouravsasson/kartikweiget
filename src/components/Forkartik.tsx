@@ -21,7 +21,7 @@ const VoiceAIWidget = () => {
   });
   const [message, setMessage] = useState("");
 
-  const { agent_id, schema } = useWidgetContext();
+    const { agent_id, schema } = useWidgetContext();
   const { callId, callSessionId, setCallId, setCallSessionId } =
     useSessionStore();
   const {
@@ -34,24 +34,24 @@ const VoiceAIWidget = () => {
     setStatus,
   } = useUltravoxStore();
   const baseurl = "https://app.snowie.ai";
-  //   const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
-  //   const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
+  // const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
+  // const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
   const debugMessages = new Set(["debug"]);
   console.log(status);
 
   useEffect(() => {
     if (status === "disconnected") {
-      setSpeech("talk to jhon");
+      setSpeech("Talk To Jhon");
     } else if (status === "connecting") {
-      setSpeech("connecting to jhon");
+      setSpeech("Connecting To Jhon");
     } else if (status === "speaking") {
-      setSpeech("jhon is speaking");
+      setSpeech("Jhon is Speaking");
     } else if (status === "connected") {
-      setSpeech("connected to jhon");
+        setSpeech("Connected To Jhon");
     } else if (status === "disconnecting") {
-      setSpeech("ending conversation with jhon");
+      setSpeech("Ending Conversation With Jhon");
     } else if (status === "listening") {
-      setSpeech("jhon is listening");
+      setSpeech("Jhon is Listening");
     }
   }, [status]);
 
@@ -178,11 +178,26 @@ const VoiceAIWidget = () => {
     setExpanded(!expanded);
   };
 
+  const handleClose = async () => {
+    setExpanded(!expanded);
+    await session.leaveCall();
+    const response = await axios.post(
+      `${baseurl}/api/end-call-session-ultravox/`,
+      {
+        call_session_id: callSessionId,
+        call_id: callId,
+        schema_name: schema,
+      }
+    );
+    setTranscripts(null);
+    toggleVoice(false);
+  };
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {expanded ? (
         <div
-          className={`bg-gradient-to-b from-black via-gray-900 to-black rounded-2xl shadow-2xl overflow-hidden w-96 border ${
+          className={` bg-gradient-to-b from-black via-gray-900 to-black rounded-2xl shadow-2xl overflow-hidden  border ${
             isGlowing
               ? "border-yellow-300 shadow-yellow-400/40"
               : "border-yellow-400"
@@ -207,7 +222,7 @@ const VoiceAIWidget = () => {
                 <Minimize2 size={18} />
               </button>
               <button
-                onClick={toggleExpand}
+                onClick={handleClose}
                 className="text-gray-300 hover:text-yellow-400 transition-colors"
               >
                 <X size={18} />
