@@ -12,6 +12,7 @@ const VoiceAIWidget = () => {
   const [inputValue, setInputValue] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   // const [transcription, setTranscription] = useState("");
+  const containerRef = useRef(null);
   const [isGlowing, setIsGlowing] = useState(false);
   const [speech, setSpeech] = useState("");
   const [pulseEffects, setPulseEffects] = useState({
@@ -21,7 +22,7 @@ const VoiceAIWidget = () => {
   });
   const [message, setMessage] = useState("");
 
-    const { agent_id, schema } = useWidgetContext();
+  const { agent_id, schema } = useWidgetContext();
   const { callId, callSessionId, setCallId, setCallSessionId } =
     useSessionStore();
   const {
@@ -47,7 +48,7 @@ const VoiceAIWidget = () => {
     } else if (status === "speaking") {
       setSpeech("Jhon is Speaking");
     } else if (status === "connected") {
-        setSpeech("Connected To Jhon");
+      setSpeech("Connected To Jhon");
     } else if (status === "disconnecting") {
       setSpeech("Ending Conversation With Jhon");
     } else if (status === "listening") {
@@ -193,11 +194,19 @@ const VoiceAIWidget = () => {
     toggleVoice(false);
   };
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      // Set scrollTop to scrollHeight to always scroll to the bottom
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [transcripts]);
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {expanded ? (
         <div
-          className={` bg-gradient-to-b from-black via-gray-900 to-black rounded-2xl shadow-2xl overflow-hidden  border ${
+          className={` bg-gradient-to-b w-[309px] h-[521px] from-black via-gray-900 to-black rounded-2xl shadow-2xl overflow-hidden  border ${
             isGlowing
               ? "border-yellow-300 shadow-yellow-400/40"
               : "border-yellow-400"
@@ -308,18 +317,12 @@ const VoiceAIWidget = () => {
                   </div>
                 )}
               </div>
-              <div className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-4 min-h-16 text-white shadow-inner border border-gray-800">
+              <div
+                ref={containerRef}
+                className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-4 h-16 text-white shadow-inner border border-gray-800 overflow-y-auto"
+              >
                 <div className="relative">
-                  {transcripts ? (
-                    <span className="text-yellow-50">{transcripts}</span>
-                  ) : isRecording ? (
-                    <span className="inline-block w-2 h-4 bg-yellow-400 animate-pulse rounded ml-1"></span>
-                  ) : (
-                    ""
-                  )}
-                  {isRecording && transcripts && (
-                    <span className="inline-block w-2 h-4 bg-yellow-400 animate-pulse rounded ml-1"></span>
-                  )}
+                  <span className="text-yellow-50">{transcripts}</span>
                 </div>
               </div>
             </div>
