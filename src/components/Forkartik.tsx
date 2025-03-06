@@ -43,17 +43,17 @@ const VoiceAIWidget = () => {
 
   useEffect(() => {
     if (status === "disconnected") {
-      setSpeech("Talk To Jhon");
+      setSpeech("Talk To John");
     } else if (status === "connecting") {
-      setSpeech("Connecting To Jhon");
+      setSpeech("Connecting To John");
     } else if (status === "speaking") {
-      setSpeech("Jhon is Speaking");
+        setSpeech("John is Speaking");
     } else if (status === "connected") {
-      setSpeech("Connected To Jhon");
+      setSpeech("Connected To John");
     } else if (status === "disconnecting") {
-      setSpeech("Ending Conversation With Jhon");
+      setSpeech("Ending Conversation With John");
     } else if (status === "listening") {
-      setSpeech("Jhon is Listening");
+      setSpeech("John is Listening");
     }
   }, [status]);
 
