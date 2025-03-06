@@ -6,6 +6,7 @@ import { UltravoxSession } from "ultravox-client";
 import { useWidgetContext } from "../constexts/WidgetContext";
 import useSessionStore from "../store/session";
 import { useUltravoxStore } from "../store/ultrasession";
+import logo from "../assets/logo.png";
 
 const VoiceAIWidget = () => {
   const [expanded, setExpanded] = useState(false);
@@ -206,18 +207,20 @@ const VoiceAIWidget = () => {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {expanded ? (
         <div
-          className={` bg-gradient-to-b w-[309px] h-[521px] from-black via-gray-900 to-black rounded-2xl shadow-2xl overflow-hidden  border ${
+          className={`bg-gray-900/50 backdrop-blur-sm w-[309px] h-[521px] rounded-2xl shadow-2xl overflow-hidden border ${
             isGlowing
               ? "border-yellow-300 shadow-yellow-400/40"
               : "border-yellow-400"
           } transition-all duration-500`}
         >
           {/* Header with glow effect */}
-          <div className="relative p-4 flex justify-between items-center">
+          <div className="relative p-4 flex justify-between bg-black items-center">
             <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-transparent to-yellow-500/5"></div>
             <div className="relative flex items-center">
               <div className="bg-black rounded-full w-8 h-8 flex items-center justify-center mr-2 border border-yellow-400 shadow-lg shadow-yellow-400/20">
-                <span className="text-yellow-400 font-bold text-xl">D</span>
+                <span className="text-yellow-400 font-bold text-xl">
+                  <img src={logo} alt="logo" className="w-6 h-6" />
+                </span>
               </div>
               <span className="text-white font-bold text-lg">
                 Voice Assistant
@@ -240,21 +243,21 @@ const VoiceAIWidget = () => {
           </div>
 
           {/* Microphone Button with enhanced visual effects */}
-          <div className="py-10 flex flex-col items-center justify-center relative overflow-hidden">
+          <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full">
             {/* Background glow effects */}
             <div className="absolute inset-0 bg-gradient-to-b from-yellow-500/10 to-transparent"></div>
-            <div className="absolute w-full h-64 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/10 rounded-full blur-3xl"></div>
-            <div className="absolute w-52 h-52 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full blur-xl animate-pulse"></div>
-            <div className="absolute w-40 h-40 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/25 rounded-full blur-md animate-pulse"></div>
+            <div className="absolute w-full h-64 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/10 rounded-full blur-3xl"></div>
+            <div className="absolute w-52 h-52  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="absolute w-40 h-40  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/25 rounded-full blur-md animate-pulse"></div>
 
             {/* Decorative elements */}
-            <div className="absolute w-full h-full">
+            {/* <div className="absolute w-full h-full">
               <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping"></div>
               <div className="absolute top-3/4 left-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-300"></div>
               <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-700"></div>
               <div className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-500"></div>
               <div className="absolute top-1/2 left-1/5 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-200"></div>
-            </div>
+            </div> */}
 
             {/* Microphone button with pulse animations */}
             <div className="relative">
@@ -291,7 +294,7 @@ const VoiceAIWidget = () => {
                       isRecording ? "animate-pulse" : ""
                     }`}
                   >
-                    D
+                    <img src={logo} alt="logo" className="w-20 h-20" />
                   </span>
                 </div>
               </button>
@@ -300,58 +303,60 @@ const VoiceAIWidget = () => {
             <p className="text-yellow-400 text-sm mt-5 font-medium drop-shadow-md bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm border border-yellow-400/20">
               {speech}
             </p>
-          </div>
 
-          {/* Transcription Box with enhanced styling */}
-          <div className="relative p-4 border-t border-b border-gray-800">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-800/50 to-black/50"></div>
-            <div className="relative">
-              <div className="flex justify-between items-center mb-2">
-                {/* <div className="text-yellow-400 text-sm font-medium">
+            {/* Transcription Box with enhanced styling */}
+            <div className="relative p-4 w-full ">
+              <div className="absolute inset-0 "></div>
+              <div className="relative">
+                <div className="flex justify-between items-center mb-2">
+                  {/* <div className="text-yellow-400 text-sm font-medium">
                   Real-time transcription
                 </div> */}
-                {isRecording && (
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></div>
-                    <span className="text-red-400 text-xs">LIVE</span>
+                  {isRecording && (
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></div>
+                      <span className="text-red-400 text-xs">LIVE</span>
+                    </div>
+                  )}
+                </div>
+                <div
+                  ref={containerRef}
+                  className=" bg-white backdrop-blur-sm rounded-xl p-4 h-16 text-white shadow-inner border border-gray-800 overflow-y-auto scrollbar-hide ring-yellow-400/80"
+                >
+                  <div className="relative">
+                    <span className="text-black">{transcripts}</span>
                   </div>
-                )}
-              </div>
-              <div
-                ref={containerRef}
-                className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-4 h-16 text-white shadow-inner border border-gray-800 overflow-y-auto"
-              >
-                <div className="relative">
-                  <span className="text-yellow-50">{transcripts}</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Input Area with glass effect */}
-          <div className="relative p-3 border-t border-gray-800">
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-            <div className="relative flex items-center space-x-2">
-              <input
-                type="text"
-                disabled={status === "disconnected" || status === "connecting"}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit(e.target.value);
+            {/* Input Area with glass effect */}
+            <div className="relative p-3 ">
+              <div className="absolute inset-0"></div>
+              <div className="relative flex items-center space-x-2">
+                <input
+                  type="text"
+                  disabled={
+                    status === "disconnected" || status === "connecting"
                   }
-                }}
-                placeholder="Type your message..."
-                className="flex-1 bg-gray-800/80 text-white p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400/80 placeholder-gray-500 border border-gray-700"
-              />
-              <button
-                type="button"
-                onClick={handleSubmit}
-                className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl hover:from-yellow-400 hover:to-yellow-300 transition-colors shadow-md hover:shadow-yellow-400/30"
-              >
-                <Send size={20} className="text-black" />
-              </button>
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSubmit(e.target.value);
+                    }
+                  }}
+                  placeholder="Type your message..."
+                  className="flex-1 bg-white text-black p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400/80 placeholder-gray-500 border border-gray-700"
+                />
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl hover:from-yellow-400 hover:to-yellow-300 transition-colors shadow-md hover:shadow-yellow-400/30"
+                >
+                  <Send size={20} className="text-black" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -364,7 +369,7 @@ const VoiceAIWidget = () => {
             <div className="absolute inset-0 -m-1 bg-yellow-400/40 rounded-full animate-ping"></div>
             <div className="absolute inset-0 -m-3 bg-yellow-400/20 rounded-full animate-pulse"></div>
             <span className="text-yellow-400 font-bold text-3xl relative z-10 drop-shadow-xl tracking-tighter">
-              D
+              <img src={logo} alt="logo" className="w-10 h-10" />
             </span>
           </div>
         </button>

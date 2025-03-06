@@ -437,3 +437,12 @@
     100% { filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.9)); }
   }
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
