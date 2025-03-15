@@ -18,13 +18,15 @@ export default defineConfig({
       formats: ['iife'], 
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      // Remove external dependencies to bundle them
+      // external: ['react', 'react-dom'],
       output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        },
+        // Remove globals mapping since React and ReactDOM will be bundled
+        // globals: {
+        //   react: 'React',
+        //   'react-dom': 'ReactDOM',
+        // },
       },
-    },
-  },
+    },
+  },
 });
