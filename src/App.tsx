@@ -15,67 +15,67 @@ function App() {
   const baseurl = "https://app.snowie.ai";
   // const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
 
-  useEffect(() => {
-    if (status === "disconnected" || status === "connecting") {
-      return;
-    }
+  // useEffect(() => {
+  //   if (status === "disconnected" || status === "connecting") {
+  //     return;
+  //   }
 
-    const handleMouseLeave = (event: MouseEvent) => {
-      if (event.clientY <= 10 && !exitConfirmed) {
-        setShowPopup(true);
-      }
-    };
+  //   const handleMouseLeave = (event: MouseEvent) => {
+  //     if (event.clientY <= 10 && !exitConfirmed) {
+  //       setShowPopup(true);
+  //     }
+  //   };
 
-    const handleBlur = () => {
-      if (!exitConfirmed) {
-        setShowPopup(true);
-      }
-    };
+  //   const handleBlur = () => {
+  //     if (!exitConfirmed) {
+  //       setShowPopup(true);
+  //     }
+  //   };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden" && !exitConfirmed) {
-        setShowPopup(true);
-      }
-    };
+  //   const handleVisibilityChange = () => {
+  //     if (document.visibilityState === "hidden" && !exitConfirmed) {
+  //       setShowPopup(true);
+  //     }
+  //   };
 
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!exitConfirmed) {
-        e.preventDefault();
-        // e.returnValue = "";
-        setShowPopup(true);
-      }
-    };
+  //   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  //     if (!exitConfirmed) {
+  //       e.preventDefault();
+  //       // e.returnValue = "";
+  //       setShowPopup(true);
+  //     }
+  //   };
 
-    document.addEventListener("mouseleave", handleMouseLeave);
-    window.addEventListener("blur", handleBlur);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("beforeunload", handleBeforeUnload);
+  //   document.addEventListener("mouseleave", handleMouseLeave);
+  //   window.addEventListener("blur", handleBlur);
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
 
-    return () => {
-      document.removeEventListener("mouseleave", handleMouseLeave);
-      window.removeEventListener("blur", handleBlur);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [exitConfirmed, status]);
+  //   return () => {
+  //     document.removeEventListener("mouseleave", handleMouseLeave);
+  //     window.removeEventListener("blur", handleBlur);
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, [exitConfirmed, status]);
 
-  const handleConfirmExit = async () => {
-    console.log(session);
-    await session.leaveCall();
-    const response = await axios.post(
-      `${baseurl}/api/end-call-session-ultravox/`,
-      {
-        call_session_id: callSessionId,
-        call_id: callId,
-        schema_name: schema,
-      }
-    );
-    setTranscripts(null);
-    setIsListening(false);
-    setShowPopup(false);
-  };
+  // const handleConfirmExit = async () => {
+  //   console.log(session);
+  //   await session.leaveCall();
+  //   const response = await axios.post(
+  //     `${baseurl}/api/end-call-session-ultravox/`,
+  //     {
+  //       call_session_id: callSessionId,
+  //       call_id: callId,
+  //       schema_name: schema,
+  //     }
+  //   );
+  //   setTranscripts(null);
+  //   setIsListening(false);
+  //   setShowPopup(false);
+  // };
 
-  const handleCancelExit = () => setShowPopup(false);
+  // const handleCancelExit = () => setShowPopup(false);
 
   return (
     <>
@@ -87,7 +87,7 @@ function App() {
         />
       </div> */}
       <Forkartik />
-      {showPopup && (
+      {/* {showPopup && (
         <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-50">
           <div className="max-w-md w-full bg-white/30 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-lg text-center">
             <h2 className="text-2xl font-semibold text-white mb-4">
@@ -112,7 +112,7 @@ function App() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 }

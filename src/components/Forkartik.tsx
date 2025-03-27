@@ -15,6 +15,7 @@ const VoiceAIWidget = () => {
   // const [transcription, setTranscription] = useState("");
   const containerRef = useRef(null);
   const [isGlowing, setIsGlowing] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [speech, setSpeech] = useState("");
   const [pulseEffects, setPulseEffects] = useState({
     small: false,
@@ -39,7 +40,6 @@ const VoiceAIWidget = () => {
   // const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
   // const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
   const debugMessages = new Set(["debug"]);
-  console.log(status);
 
   useEffect(() => {
     if (status === "disconnected") {
@@ -97,28 +97,63 @@ const VoiceAIWidget = () => {
 
   // Handle message submission
   const handleSubmit = () => {
-    // console.log(status);
-    // console.log(message);
-
     if (status != "disconnected") {
       session.sendText(`${message}`);
       setMessage("");
     }
   };
 
+  useEffect(() => {
+    console.log("status", status);
+    const callId = localStorage.getItem("callId");
+    if (callId && status === "disconnected") {
+      console.log("reconnecting");
+      setIsMuted(true);
+      handleMicClickForReconnect(callId);
+    } else if (status === "listening" && callId && isMuted) {
+      console.log("muting mic");
+      session.muteMic();
+    }
+  }, [status]);
+
+  const handleMicClickForReconnect = async (id) => {
+    try {
+      const response = await axios.post(`${baseurl}/api/start-thunder/`, {
+        agent_code: agent_id,
+        schema_name: schema,
+        prior_call_id: id,
+      });
+
+      const wssUrl = response.data.joinUrl;
+      const callId = response.data.callId;
+      localStorage.setItem("callId", callId);
+      setCallId(callId);
+      setCallSessionId(response.data.call_session_id);
+
+      if (wssUrl) {
+        await session.joinCall(`${wssUrl}`);
+      }
+    } catch (error) {
+      console.error("Error in handleMicClick:", error);
+    }
+  };
+
   // Handle mic button click
-  const handleMicClick = async () => {
+  const handleMicClick = async (id) => {
     try {
       if (!isListening) {
         const response = await axios.post(`${baseurl}/api/start-thunder/`, {
           agent_code: agent_id,
           schema_name: schema,
+          prior_call_id: id,
         });
 
         const wssUrl = response.data.joinUrl;
-        setCallId(response.data.callId);
+        const callId = response.data.callId;
+        localStorage.setItem("callId", callId);
+        localStorage.setItem("wssUrl", wssUrl);
+        setCallId(callId);
         setCallSessionId(response.data.call_session_id);
-        // console.log("Mic button clicked!", wssUrl);
 
         if (wssUrl) {
           session.joinCall(`${wssUrl}`);
@@ -140,6 +175,7 @@ const VoiceAIWidget = () => {
         // console.log("Call left successfully");
         setTranscripts(null);
         toggleVoice(false);
+        localStorage.clear();
       }
     } catch (error) {
       // console.error("Error in handleMicClick:", error);
@@ -198,11 +234,33 @@ const VoiceAIWidget = () => {
   }, [isRecording]);
 
   const toggleExpand = () => {
+    if (status === "disconnected") {
+      setSpeech("Connecting To John");
+      console.log("Speaker muted:", session.isSpeakerMuted);
+
+      handleMicClick();
+    }
+    if (session.isMicMuted) {
+      setIsMuted(false);
+      session.unmuteMic();
+    }
+
     setExpanded(!expanded);
+  };
+
+  const togglemute = () => {
+    setExpanded(!expanded);
+    if (session.isMicMuted) {
+      session.unmuteMic();
+    } else {
+      session.muteMic();
+    }
   };
 
   const handleClose = async () => {
     setExpanded(!expanded);
+    localStorage.clear();
+
     await session.leaveCall();
     const response = await axios.post(
       `${baseurl}/api/end-call-session-ultravox/`,
@@ -254,7 +312,7 @@ const VoiceAIWidget = () => {
             </div>
             <div className="relative flex space-x-2">
               <button
-                onClick={toggleExpand}
+                onClick={togglemute}
                 className="text-gray-300 hover:text-yellow-400 transition-colors"
               >
                 <Minimize2 size={18} />
