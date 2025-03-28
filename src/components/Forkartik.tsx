@@ -59,6 +59,7 @@ const VoiceAIWidget = () => {
 
   useEffect(() => {
     if (status === "disconnecting") {
+      localStorage.clear();
       const handleClose = async () => {
         await session.leaveCall();
         const response = await axios.post(
