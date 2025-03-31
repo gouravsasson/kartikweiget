@@ -17,6 +17,7 @@ const VoiceAIWidget = () => {
   const [isGlowing, setIsGlowing] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [speech, setSpeech] = useState("");
+  const [isVisible, setIsVisible] = useState(true);
   const [pulseEffects, setPulseEffects] = useState({
     small: false,
     medium: false,
@@ -56,6 +57,21 @@ const VoiceAIWidget = () => {
       setSpeech("John is Listening");
     }
   }, [status]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        console.log("gg", document.visibilityState);
+        togglemute();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (status === "disconnecting") {
