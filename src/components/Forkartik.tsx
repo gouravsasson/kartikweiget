@@ -62,7 +62,9 @@ const VoiceAIWidget = () => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         console.log("gg", document.visibilityState);
-        togglemute();
+        session.muteSpeaker();
+      } else if (document.visibilityState === "visible") {
+        session.unmuteSpeaker();
       }
     };
 
