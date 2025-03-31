@@ -5,7 +5,7 @@ import axios from "axios";
 import { UltravoxSession } from "ultravox-client";
 import { useWidgetContext } from "../constexts/WidgetContext";
 import useSessionStore from "../store/session";
-import { useUltravoxStomuteMicre } from "../store/ultrasession";
+import { useUltravoxStore } from "../store/ultrasession";
 import logo from "../assets/logo.png";
 
 const VoiceAIWidget = () => {
