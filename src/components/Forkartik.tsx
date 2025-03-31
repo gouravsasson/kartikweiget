@@ -112,8 +112,8 @@ const VoiceAIWidget = () => {
       setIsMuted(true);
       handleMicClickForReconnect(callId);
     } else if (status === "listening" && callId && isMuted) {
-      console.log("muting mic");
-      session.muteMic();
+      // console.log("muting mic");
+      session.muteSpeaker();
     }
   }, [status]);
 
@@ -241,9 +241,9 @@ const VoiceAIWidget = () => {
 
       handleMicClick();
     }
-    if (session.isMicMuted) {
+    if (session.isSpeakerMuted) {
       setIsMuted(false);
-      session.unmuteMic();
+      session.unmuteSpeaker();
     }
 
     setExpanded(!expanded);
@@ -251,10 +251,10 @@ const VoiceAIWidget = () => {
 
   const togglemute = () => {
     setExpanded(!expanded);
-    if (session.isMicMuted) {
-      session.unmuteMic();
+    if (session.isSpeakerMuted) {
+      session.unmuteSpeaker();
     } else {
-      session.muteMic();
+      session.muteSpeaker();
     }
   };
 
