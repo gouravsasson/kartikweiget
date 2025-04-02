@@ -80,6 +80,8 @@ const VoiceAIWidget = () => {
       localStorage.clear();
       const handleClose = async () => {
         await session.leaveCall();
+        console.log("call left successfully first time");
+
         const response = await axios.post(
           `${baseurl}/api/end-call-session-ultravox/`,
           {
@@ -88,8 +90,6 @@ const VoiceAIWidget = () => {
             schema_name: schema,
           }
         );
-
-        // console.log("Call left successfully");
         setTranscripts(null);
         toggleVoice(false);
       };
@@ -182,6 +182,7 @@ const VoiceAIWidget = () => {
         toggleVoice(true);
       } else {
         await session.leaveCall();
+        console.log("call left successfully second time");
         const response = await axios.post(
           `${baseurl}/api/end-call-session-ultravox/`,
           {
@@ -281,6 +282,7 @@ const VoiceAIWidget = () => {
     localStorage.clear();
 
     await session.leaveCall();
+    console.log("call left successfully third time");
     const response = await axios.post(
       `${baseurl}/api/end-call-session-ultravox/`,
       {
