@@ -208,7 +208,6 @@ const VoiceAIWidget = () => {
         if (wssUrl) {
           session.joinCall(`${wssUrl}`);
         } else {
-          // console.error("WebSocket URL is not set");
         }
         toggleVoice(true);
       } else {
@@ -311,19 +310,21 @@ const VoiceAIWidget = () => {
   const handleClose = async () => {
     setExpanded(!expanded);
     localStorage.clear();
-    if (status === "connected") {
-      await session.leaveCall();
-      const response = await axios.post(
-        `${baseurl}/api/end-call-session-ultravox/`,
-        {
-          call_session_id: callSessionId,
-          call_id: callId,
-          schema_name: schema,
-        }
-      );
-    }
+    await session.leaveCall();
+    const response = await axios.post(
+      `${baseurl}/api/end-call-session-ultravox/`,
+      {
+        call_session_id: callSessionId,
+        call_id: callId,
+        schema_name: schema,
+      }
+    );
     setTranscripts(null);
     toggleVoice(false);
+  };
+
+  const toggleVoice = (data) => {
+    setIsListening(data);
   };
 
   useEffect(() => {
