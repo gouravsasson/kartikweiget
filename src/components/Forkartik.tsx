@@ -18,6 +18,7 @@ const VoiceAIWidget = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [speech, setSpeech] = useState("");
   const [isVisible, setIsVisible] = useState(true);
+  const [auto_end_call, setAutoEndCall] = useState(false);
   const [pulseEffects, setPulseEffects] = useState({
     small: false,
     medium: false,
@@ -74,11 +75,52 @@ const VoiceAIWidget = () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
+  //disconnecting
+  // useEffect(() => {
+  //   if (status === "disconnecting") {
+  //     const handleClose = async () => {
+  //       await session.leaveCall();
+  //       localStorage.clear();
+  //       console.log("call left successfully first time");
+
+  //       const response = await axios.post(
+  //         `${baseurl}/api/end-call-session-ultravox/`,
+  //         {
+  //           call_session_id: callSessionId,
+  //           call_id: callId,
+  //           schema_name: schema,
+  //         }
+  //       );
+  //       setTranscripts(null);
+  //       toggleVoice(false);
+  //     };
+  //     handleClose();
+  //   }
+  // }, [status]);
+
+  const sessionRef = useRef<UltravoxSession | null>(null);
+  if (!sessionRef.current) {
+    sessionRef.current = new UltravoxSession({
+      experimentalMessages: debugMessages,
+    });
+
+    setSession(sessionRef.current);
+  }
+
+  const session = sessionRef.current;
+
+  const end_call = (parameters) => {
+    console.log("end_call", parameters.auto_disconnect_call);
+    if (parameters.auto_disconnect_call) {
+      setAutoEndCall(true);
+    }
+  };
 
   useEffect(() => {
-    if (status === "disconnecting") {
-      localStorage.clear();
+    if (auto_end_call) {
       const handleClose = async () => {
+        localStorage.clear();
+
         await session.leaveCall();
         console.log("call left successfully first time");
 
@@ -95,24 +137,13 @@ const VoiceAIWidget = () => {
       };
       handleClose();
     }
-  }, [status]);
+  }, [auto_end_call]);
 
-  const sessionRef = useRef<UltravoxSession | null>(null);
-  if (!sessionRef.current) {
-    sessionRef.current = new UltravoxSession({
-      experimentalMessages: debugMessages,
-    });
+  session.registerToolImplementation("auto_end_call", end_call);
 
-    setSession(sessionRef.current);
-  }
-  // console.log(sessionRef);
-
-  const session = sessionRef.current;
+  // Function that implements tool logic
 
   // Toggle local listening state
-  const toggleVoice = (data) => {
-    setIsListening(data);
-  };
 
   // Handle message submission
   const handleSubmit = () => {
@@ -280,17 +311,17 @@ const VoiceAIWidget = () => {
   const handleClose = async () => {
     setExpanded(!expanded);
     localStorage.clear();
-
-    await session.leaveCall();
-    console.log("call left successfully third time");
-    const response = await axios.post(
-      `${baseurl}/api/end-call-session-ultravox/`,
-      {
-        call_session_id: callSessionId,
-        call_id: callId,
-        schema_name: schema,
-      }
-    );
+    if (status === "connected") {
+      await session.leaveCall();
+      const response = await axios.post(
+        `${baseurl}/api/end-call-session-ultravox/`,
+        {
+          call_session_id: callSessionId,
+          call_id: callId,
+          schema_name: schema,
+        }
+      );
+    }
     setTranscripts(null);
     toggleVoice(false);
   };
