@@ -297,7 +297,7 @@ const VoiceAIWidget = () => {
 
     setExpanded(!expanded);
   };
-
+  console.log("kya agent mute hai ", session.isSpeakerMuted);
   const togglemute = () => {
     setExpanded(!expanded);
     if (session.isSpeakerMuted) {
