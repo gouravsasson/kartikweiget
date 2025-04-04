@@ -117,7 +117,7 @@ const VoiceAIWidget = () => {
   };
 
   useEffect(() => {
-    const callId = localStorage.getItem("callId");
+    const id = localStorage.getItem("callId");
     if (auto_end_call) {
       const handleClose = async () => {
         localStorage.clear();
@@ -131,7 +131,7 @@ const VoiceAIWidget = () => {
             call_session_id: callSessionId,
             call_id: callId,
             schema_name: schema,
-            prior_call_id: callId,
+            prior_call_id: id,
           }
         );
         setTranscripts(null);
@@ -213,7 +213,7 @@ const VoiceAIWidget = () => {
         }
         toggleVoice(true);
       } else {
-        const callId = localStorage.getItem("callId");
+        const id = localStorage.getItem("callId");
         await session.leaveCall();
         console.log("call left successfully second time");
         const response = await axios.post(
@@ -222,7 +222,7 @@ const VoiceAIWidget = () => {
             call_session_id: callSessionId,
             call_id: callId,
             schema_name: schema,
-            prior_call_id: callId,
+            prior_call_id: id,
           }
         );
 
@@ -311,7 +311,7 @@ const VoiceAIWidget = () => {
   };
 
   const handleClose = async () => {
-    const callId = localStorage.getItem("callId");
+    const id = localStorage.getItem("callId");
     setExpanded(!expanded);
     localStorage.clear();
     await session.leaveCall();
@@ -321,7 +321,7 @@ const VoiceAIWidget = () => {
         call_session_id: callSessionId,
         call_id: callId,
         schema_name: schema,
-        prior_call_id: callId,
+        prior_call_id: id,
       }
     );
     setTranscripts(null);
