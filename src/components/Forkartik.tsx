@@ -160,7 +160,7 @@ const VoiceAIWidget = () => {
       console.log("reconnecting");
       setIsMuted(true);
       handleMicClickForReconnect(callId);
-    } else if (status === "listening" && callId && isMuted) {
+    } else if (status === "listening" && callId && isMuted && !expanded) {
       // console.log("muting mic");
       session.muteSpeaker();
     }
@@ -286,7 +286,6 @@ const VoiceAIWidget = () => {
   const toggleExpand = () => {
     if (status === "disconnected") {
       setSpeech("Connecting To John");
-      console.log("Speaker muted:", session.isSpeakerMuted);
 
       handleMicClick();
     }
