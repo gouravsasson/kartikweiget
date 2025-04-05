@@ -26,7 +26,7 @@ const VoiceAIWidget = () => {
   });
   const [message, setMessage] = useState("");
 
-  const { agent_id, schema } = useWidgetContext();
+  // const { agent_id, schema } = useWidgetContext();
   const { callId, callSessionId, setCallId, setCallSessionId } =
     useSessionStore();
   const {
@@ -39,8 +39,8 @@ const VoiceAIWidget = () => {
     setStatus,
   } = useUltravoxStore();
   const baseurl = "https://app.snowie.ai";
-  // const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
-  // const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
+  const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
+  const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
   const debugMessages = new Set(["debug"]);
 
   useEffect(() => {
@@ -141,6 +141,32 @@ const VoiceAIWidget = () => {
       hasReconnected.current = true;
     } else if (status === "listening" && callId && isMuted && !expanded) {
       session.muteSpeaker();
+    }
+  }, [status]);
+
+  // disconnecting
+  useEffect(() => {
+    console.log("disconnecting up", status);
+    if (status === "disconnecting") {
+      console.log("disconnecting down", status);
+
+      const handleClose = async () => {
+        await session.leaveCall();
+        localStorage.clear();
+        console.log("call left successfully first time");
+
+        const response = await axios.post(
+          `${baseurl}/api/end-call-session-ultravox/`,
+          {
+            call_session_id: callSessionId,
+            call_id: callId,
+            schema_name: schema,
+          }
+        );
+        setTranscripts(null);
+        toggleVoice(false);
+      };
+      handleClose();
     }
   }, [status]);
 
