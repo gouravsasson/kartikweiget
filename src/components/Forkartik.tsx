@@ -26,7 +26,7 @@ const VoiceAIWidget = () => {
   });
   const [message, setMessage] = useState("");
 
-  // const { agent_id, schema } = useWidgetContext();
+  const { agent_id, schema } = useWidgetContext();
   const { callId, callSessionId, setCallId, setCallSessionId } =
     useSessionStore();
   const {
@@ -39,8 +39,8 @@ const VoiceAIWidget = () => {
     setStatus,
   } = useUltravoxStore();
   const baseurl = "https://app.snowie.ai";
-  const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
-  const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
+  // const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
+  // const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
   const debugMessages = new Set(["debug"]);
 
   useEffect(() => {
@@ -144,31 +144,63 @@ const VoiceAIWidget = () => {
     }
   }, [status]);
 
+  useEffect(() => {
+    // Set flag when page is about to refresh
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem("isRefreshing", "true");
+    };
+
+    // Clear flag when page loads (this will execute after refresh)
+    const clearRefreshFlag = () => {
+      sessionStorage.removeItem("isRefreshing");
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("load", clearRefreshFlag);
+
+    // Initial cleanup of any leftover flag
+    clearRefreshFlag();
+
+    // Cleanup listeners
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("load", clearRefreshFlag);
+    };
+  }, []);
+
   // disconnecting
-  // useEffect(() => {
-  //   console.log("disconnecting up", status);
-  //   if (status === "disconnecting") {
-  //     console.log("disconnecting down", status);
+  useEffect(() => {
+    console.log("disconnecting up", status);
 
-  //     const handleClose = async () => {
-  //       await session.leaveCall();
-  //       localStorage.clear();
-  //       console.log("call left successfully first time");
+    if (status === "disconnecting") {
+      console.log("disconnecting down", status);
 
-  //       const response = await axios.post(
-  //         `${baseurl}/api/end-call-session-ultravox/`,
-  //         {
-  //           call_session_id: callSessionId,
-  //           call_id: callId,
-  //           schema_name: schema,
-  //         }
-  //       );
-  //       setTranscripts(null);
-  //       toggleVoice(false);
-  //     };
-  //     handleClose();
-  //   }
-  // }, [status]);
+      // Only run cleanup if this isn't a page refresh
+      const isPageRefresh = sessionStorage.getItem("isRefreshing") === "true";
+
+      if (!isPageRefresh) {
+        const handleClose = async () => {
+          await session.leaveCall();
+          localStorage.clear();
+          console.log("call left successfully first time");
+
+          const response = await axios.post(
+            `${baseurl}/api/end-call-session-ultravox/`,
+            {
+              call_session_id: callSessionId,
+              call_id: callId,
+              schema_name: schema,
+            }
+          );
+
+          setTranscripts(null);
+          toggleVoice(false);
+        };
+
+        handleClose();
+      }
+    }
+  }, [status]);
 
   const handleMicClickForReconnect = async (id) => {
     try {
