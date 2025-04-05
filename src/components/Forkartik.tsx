@@ -111,7 +111,7 @@ const VoiceAIWidget = () => {
             call_session_id: callSessionId,
             // call_id: callId,
             schema_name: schema,
-            prior_call_ids: id,
+            prior_call_ids: [...callSessionId, id],
           }
         );
         setTranscripts(null);
@@ -216,7 +216,7 @@ const VoiceAIWidget = () => {
         }
         toggleVoice(true);
       } else {
-        const ids = JSON.parse(localStorage.getItem("callSessionId"));
+        const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
         const id = localStorage.getItem("callId");
         await session.leaveCall();
         console.log("call left successfully second time");
@@ -226,7 +226,7 @@ const VoiceAIWidget = () => {
             call_session_id: callSessionId,
             // call_id: callId,
             schema_name: schema,
-            prior_call_ids: ids,
+            prior_call_ids: [...callSessionId, id],
           }
         );
 
@@ -315,6 +315,7 @@ const VoiceAIWidget = () => {
 
   const handleClose = async () => {
     const id = JSON.parse(localStorage.getItem("callSessionId"));
+    const callId = localStorage.getItem("callId");
     setExpanded(!expanded);
     localStorage.clear();
     await session.leaveCall();
@@ -324,7 +325,7 @@ const VoiceAIWidget = () => {
         call_session_id: callSessionId,
         // call_id: callId,
         schema_name: schema,
-        prior_call_ids: id,
+        prior_call_ids: [...id, callId],
       }
     );
     setTranscripts(null);
