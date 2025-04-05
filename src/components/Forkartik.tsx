@@ -98,7 +98,6 @@ const VoiceAIWidget = () => {
     const id = localStorage.getItem("callId");
     const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
 
-    
     if (auto_end_call) {
       const handleClose = async () => {
         localStorage.clear();
@@ -110,10 +109,9 @@ const VoiceAIWidget = () => {
           `${baseurl}/api/end-call-session-ultravox/`,
           {
             call_session_id: callSessionId,
-            call_id: callId,
+            // call_id: callId,
             schema_name: schema,
             prior_call_ids: id,
-
           }
         );
         setTranscripts(null);
@@ -132,11 +130,15 @@ const VoiceAIWidget = () => {
     }
   };
 
+  const hasReconnected = useRef(false);
+
   useEffect(() => {
     const callId = localStorage.getItem("callId");
-    if (callId && status === "disconnected") {
+    console.log(callId, status, hasReconnected.current);
+    if (callId && status === "disconnected" && !hasReconnected.current) {
       setIsMuted(true);
       handleMicClickForReconnect(callId);
+      hasReconnected.current = true;
     } else if (status === "listening" && callId && isMuted && !expanded) {
       session.muteSpeaker();
     }
@@ -144,17 +146,32 @@ const VoiceAIWidget = () => {
 
   const handleMicClickForReconnect = async (id) => {
     try {
-      const existingCallSessionIds =
-        JSON.parse(localStorage.getItem("callSessionId")) || [];
+      let existingCallSessionIds = [];
 
-      // Step 2: Append the new ID
+      const storedIds = localStorage.getItem("callSessionId");
+      if (storedIds) {
+        try {
+          const parsedIds = JSON.parse(storedIds);
+          // Ensure it's actually an array
+          if (Array.isArray(parsedIds)) {
+            existingCallSessionIds = parsedIds;
+          }
+        } catch (parseError) {
+          console.warn("Could not parse callSessionId:", parseError);
+          // Optional: clear invalid data
+          localStorage.removeItem("callSessionId");
+        }
+      }
+
+      // Append the new ID
       existingCallSessionIds.push(id);
 
-      // Step 3: Store the updated list back into localStorage
+      // Store back in localStorage
       localStorage.setItem(
         "callSessionId",
         JSON.stringify(existingCallSessionIds)
       );
+
       const response = await axios.post(`${baseurl}/api/start-thunder/`, {
         agent_code: agent_id,
         schema_name: schema,
@@ -163,6 +180,7 @@ const VoiceAIWidget = () => {
 
       const wssUrl = response.data.joinUrl;
       const callId = response.data.callId;
+
       localStorage.setItem("callId", callId);
       setCallId(callId);
       setCallSessionId(response.data.call_session_id);
@@ -176,13 +194,12 @@ const VoiceAIWidget = () => {
   };
 
   // Handle mic button click
-  const handleMicClick = async (id) => {
+  const handleMicClick = async () => {
     try {
       if (!isListening) {
         const response = await axios.post(`${baseurl}/api/start-thunder/`, {
           agent_code: agent_id,
           schema_name: schema,
-          prior_call_id: id,
         });
 
         const wssUrl = response.data.joinUrl;
@@ -190,7 +207,6 @@ const VoiceAIWidget = () => {
 
         localStorage.setItem("callId", callId);
         localStorage.setItem("wssUrl", wssUrl);
-        localStorage.setItem("callSessionId", JSON.stringify(callSessionId));
         setCallId(callId);
         setCallSessionId(response.data.call_session_id);
 
@@ -200,6 +216,7 @@ const VoiceAIWidget = () => {
         }
         toggleVoice(true);
       } else {
+        const ids = JSON.parse(localStorage.getItem("callSessionId"));
         const id = localStorage.getItem("callId");
         await session.leaveCall();
         console.log("call left successfully second time");
@@ -207,9 +224,9 @@ const VoiceAIWidget = () => {
           `${baseurl}/api/end-call-session-ultravox/`,
           {
             call_session_id: callSessionId,
-            call_id: callId,
+            // call_id: callId,
             schema_name: schema,
-            prior_call_id: id,
+            prior_call_ids: ids,
           }
         );
 
@@ -287,7 +304,6 @@ const VoiceAIWidget = () => {
 
     setExpanded(!expanded);
   };
-  console.log("kya agent mute hai ", session.isSpeakerMuted);
   const togglemute = () => {
     setExpanded(!expanded);
     if (session.isSpeakerMuted) {
@@ -306,7 +322,7 @@ const VoiceAIWidget = () => {
       `${baseurl}/api/end-call-session-ultravox/`,
       {
         call_session_id: callSessionId,
-        call_id: callId,
+        // call_id: callId,
         schema_name: schema,
         prior_call_ids: id,
       }
