@@ -184,13 +184,12 @@ const VoiceAIWidget = () => {
         const handleClose = async () => {
           await session.leaveCall();
           localStorage.clear();
-          console.log("call left successfully first time");
 
           const response = await axios.post(
             `${baseurl}/api/end-call-session-ultravox/`,
             {
-              call_session_id: callSessionId,
-              // call_id: callId,
+              // call_session_id: callSessionId,
+              call_id: callId,
               schema_name: schema,
               prior_call_ids: [...callSessionId, callId],
             }
