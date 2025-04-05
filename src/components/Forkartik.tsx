@@ -75,28 +75,6 @@ const VoiceAIWidget = () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
-  //disconnecting
-  // useEffect(() => {
-  //   if (status === "disconnecting") {
-  //     const handleClose = async () => {
-  //       await session.leaveCall();
-  //       localStorage.clear();
-  //       console.log("call left successfully first time");
-
-  //       const response = await axios.post(
-  //         `${baseurl}/api/end-call-session-ultravox/`,
-  //         {
-  //           call_session_id: callSessionId,
-  //           call_id: callId,
-  //           schema_name: schema,
-  //         }
-  //       );
-  //       setTranscripts(null);
-  //       toggleVoice(false);
-  //     };
-  //     handleClose();
-  //   }
-  // }, [status]);
 
   const sessionRef = useRef<UltravoxSession | null>(null);
   if (!sessionRef.current) {
@@ -118,6 +96,9 @@ const VoiceAIWidget = () => {
 
   useEffect(() => {
     const id = localStorage.getItem("callId");
+    const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
+
+    if (auto_end_call) {
     if (auto_end_call) {
       const handleClose = async () => {
         localStorage.clear();
@@ -131,7 +112,8 @@ const VoiceAIWidget = () => {
             call_session_id: callSessionId,
             call_id: callId,
             schema_name: schema,
-            prior_call_id: id,
+            prior_call_ids: id,
+
           }
         );
         setTranscripts(null);
@@ -156,20 +138,28 @@ const VoiceAIWidget = () => {
   };
 
   useEffect(() => {
-    console.log("status", status);
     const callId = localStorage.getItem("callId");
     if (callId && status === "disconnected") {
-      console.log("reconnecting");
       setIsMuted(true);
       handleMicClickForReconnect(callId);
     } else if (status === "listening" && callId && isMuted && !expanded) {
-      // console.log("muting mic");
       session.muteSpeaker();
     }
   }, [status]);
 
   const handleMicClickForReconnect = async (id) => {
     try {
+      const existingCallSessionIds =
+        JSON.parse(localStorage.getItem("callSessionId")) || [];
+
+      // Step 2: Append the new ID
+      existingCallSessionIds.push(id);
+
+      // Step 3: Store the updated list back into localStorage
+      localStorage.setItem(
+        "callSessionId",
+        JSON.stringify(existingCallSessionIds)
+      );
       const response = await axios.post(`${baseurl}/api/start-thunder/`, {
         agent_code: agent_id,
         schema_name: schema,
@@ -202,8 +192,10 @@ const VoiceAIWidget = () => {
 
         const wssUrl = response.data.joinUrl;
         const callId = response.data.callId;
+
         localStorage.setItem("callId", callId);
         localStorage.setItem("wssUrl", wssUrl);
+        localStorage.setItem("callSessionId", JSON.stringify(callSessionId));
         setCallId(callId);
         setCallSessionId(response.data.call_session_id);
 
@@ -311,7 +303,7 @@ const VoiceAIWidget = () => {
   };
 
   const handleClose = async () => {
-    const id = localStorage.getItem("callId");
+    const id = JSON.parse(localStorage.getItem("callSessionId"));
     setExpanded(!expanded);
     localStorage.clear();
     await session.leaveCall();
@@ -321,7 +313,7 @@ const VoiceAIWidget = () => {
         call_session_id: callSessionId,
         call_id: callId,
         schema_name: schema,
-        prior_call_id: id,
+        prior_call_ids: id,
       }
     );
     setTranscripts(null);
@@ -335,7 +327,6 @@ const VoiceAIWidget = () => {
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
-      // Set scrollTop to scrollHeight to always scroll to the bottom
       container.scrollTop = container.scrollHeight;
     }
   }, [transcripts]);
