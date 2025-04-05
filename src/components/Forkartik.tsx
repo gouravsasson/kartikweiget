@@ -87,41 +87,41 @@ const VoiceAIWidget = () => {
 
   const session = sessionRef.current;
 
-  const end_call = (parameters) => {
-    console.log("end_call", parameters.auto_disconnect_call);
-    if (parameters.auto_disconnect_call) {
-      setAutoEndCall(true);
-    }
-  };
+  // const end_call = (parameters) => {
+  //   console.log("end_call", parameters.auto_disconnect_call);
+  //   if (parameters.auto_disconnect_call) {
+  //     setAutoEndCall(true);
+  //   }
+  // };
 
-  useEffect(() => {
-    const id = localStorage.getItem("callId");
-    const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
+  // useEffect(() => {
+  //   const id = localStorage.getItem("callId");
+  //   const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
 
-    if (auto_end_call) {
-      const handleClose = async () => {
-        localStorage.clear();
+  //   if (auto_end_call) {
+  //     const handleClose = async () => {
+  //       localStorage.clear();
 
-        await session.leaveCall();
-        console.log("call left successfully first time");
+  //       await session.leaveCall();
+  //       console.log("call left successfully first time");
 
-        const response = await axios.post(
-          `${baseurl}/api/end-call-session-ultravox/`,
-          {
-            call_session_id: callSessionId,
-            // call_id: callId,
-            schema_name: schema,
-            prior_call_ids: [...callSessionId, id],
-          }
-        );
-        setTranscripts(null);
-        toggleVoice(false);
-      };
-      handleClose();
-    }
-  }, [auto_end_call]);
+  //       const response = await axios.post(
+  //         `${baseurl}/api/end-call-session-ultravox/`,
+  //         {
+  //           call_session_id: callSessionId,
+  //           // call_id: callId,
+  //           schema_name: schema,
+  //           prior_call_ids: [...callSessionId, id],
+  //         }
+  //       );
+  //       setTranscripts(null);
+  //       toggleVoice(false);
+  //     };
+  //     handleClose();
+  //   }
+  // }, [auto_end_call]);
 
-  session.registerToolImplementation("auto_end_call", end_call);
+  // session.registerToolImplementation("auto_end_call", end_call);
 
   const handleSubmit = () => {
     if (status != "disconnected") {
@@ -179,6 +179,8 @@ const VoiceAIWidget = () => {
       const isPageRefresh = sessionStorage.getItem("isRefreshing") === "true";
 
       if (!isPageRefresh) {
+        const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
+
         const handleClose = async () => {
           await session.leaveCall();
           localStorage.clear();
@@ -188,8 +190,9 @@ const VoiceAIWidget = () => {
             `${baseurl}/api/end-call-session-ultravox/`,
             {
               call_session_id: callSessionId,
-              call_id: callId,
+              // call_id: callId,
               schema_name: schema,
+              prior_call_ids: [...callSessionId, callId],
             }
           );
 
