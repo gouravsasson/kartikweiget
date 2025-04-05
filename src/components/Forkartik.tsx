@@ -145,30 +145,30 @@ const VoiceAIWidget = () => {
   }, [status]);
 
   // disconnecting
-  useEffect(() => {
-    console.log("disconnecting up", status);
-    if (status === "disconnecting") {
-      console.log("disconnecting down", status);
+  // useEffect(() => {
+  //   console.log("disconnecting up", status);
+  //   if (status === "disconnecting") {
+  //     console.log("disconnecting down", status);
 
-      const handleClose = async () => {
-        await session.leaveCall();
-        localStorage.clear();
-        console.log("call left successfully first time");
+  //     const handleClose = async () => {
+  //       await session.leaveCall();
+  //       localStorage.clear();
+  //       console.log("call left successfully first time");
 
-        const response = await axios.post(
-          `${baseurl}/api/end-call-session-ultravox/`,
-          {
-            call_session_id: callSessionId,
-            call_id: callId,
-            schema_name: schema,
-          }
-        );
-        setTranscripts(null);
-        toggleVoice(false);
-      };
-      handleClose();
-    }
-  }, [status]);
+  //       const response = await axios.post(
+  //         `${baseurl}/api/end-call-session-ultravox/`,
+  //         {
+  //           call_session_id: callSessionId,
+  //           call_id: callId,
+  //           schema_name: schema,
+  //         }
+  //       );
+  //       setTranscripts(null);
+  //       toggleVoice(false);
+  //     };
+  //     handleClose();
+  //   }
+  // }, [status]);
 
   const handleMicClickForReconnect = async (id) => {
     try {
