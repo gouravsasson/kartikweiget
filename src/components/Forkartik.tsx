@@ -98,7 +98,7 @@ const VoiceAIWidget = () => {
     const id = localStorage.getItem("callId");
     const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
 
-    if (auto_end_call) {
+    
     if (auto_end_call) {
       const handleClose = async () => {
         localStorage.clear();
@@ -125,11 +125,6 @@ const VoiceAIWidget = () => {
 
   session.registerToolImplementation("auto_end_call", end_call);
 
-  // Function that implements tool logic
-
-  // Toggle local listening state
-
-  // Handle message submission
   const handleSubmit = () => {
     if (status != "disconnected") {
       session.sendText(`${message}`);
