@@ -10,16 +10,16 @@ const useSessionStore = create((set) => ({
     return state.sessionId;
   },
   callId:null,
-  callSessionId:null,
+  callSessionIds:null,
   setCallId:(id:string)=>set({callId:id}),
-  setCallSessionId:(id:string)=>set({callSessionId:id}),
+  setCallSessionIds:(ids:string[])=>set({callSessionIds:ids}),
   getCallId: () => {
     const state = useSessionStore.getState();
     return state.callId;
   },
-  getCallSessionId: () => {
+  getCallSessionIds : () => {
     const state = useSessionStore.getState();
-    return state.callSessionId;
+    return state.callSessionIds;
   }
 }));
 

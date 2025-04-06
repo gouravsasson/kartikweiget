@@ -25,10 +25,11 @@ const VoiceAIWidget = () => {
     large: false,
   });
   const [message, setMessage] = useState("");
+  const hasReconnected = useRef(false);
+  const hasClosed = useRef(false);
 
   const { agent_id, schema } = useWidgetContext();
-  const { callId, callSessionId, setCallId, setCallSessionId } =
-    useSessionStore();
+  const { callSessionIds, setCallSessionIds } = useSessionStore();
   const {
     setSession,
     transcripts,
@@ -41,6 +42,9 @@ const VoiceAIWidget = () => {
   const baseurl = "https://app.snowie.ai";
   // const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
   // const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
+  let existingCallSessionIds: string[] = [];
+  const storedIds = localStorage.getItem("callSessionId");
+
   const debugMessages = new Set(["debug"]);
 
   useEffect(() => {
@@ -87,62 +91,12 @@ const VoiceAIWidget = () => {
 
   const session = sessionRef.current;
 
-  // const end_call = (parameters) => {
-  //   console.log("end_call", parameters.auto_disconnect_call);
-  //   if (parameters.auto_disconnect_call) {
-  //     setAutoEndCall(true);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   const id = localStorage.getItem("callId");
-  //   const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
-
-  //   if (auto_end_call) {
-  //     const handleClose = async () => {
-  //       localStorage.clear();
-
-  //       await session.leaveCall();
-  //       console.log("call left successfully first time");
-
-  //       const response = await axios.post(
-  //         `${baseurl}/api/end-call-session-ultravox/`,
-  //         {
-  //           call_session_id: callSessionId,
-  //           // call_id: callId,
-  //           schema_name: schema,
-  //           prior_call_ids: [...callSessionId, id],
-  //         }
-  //       );
-  //       setTranscripts(null);
-  //       toggleVoice(false);
-  //     };
-  //     handleClose();
-  //   }
-  // }, [auto_end_call]);
-
-  // session.registerToolImplementation("auto_end_call", end_call);
-
   const handleSubmit = () => {
     if (status != "disconnected") {
       session.sendText(`${message}`);
       setMessage("");
     }
   };
-
-  const hasReconnected = useRef(false);
-
-  useEffect(() => {
-    const callId = localStorage.getItem("callId");
-    console.log(callId, status, hasReconnected.current);
-    if (callId && status === "disconnected" && !hasReconnected.current) {
-      setIsMuted(true);
-      handleMicClickForReconnect(callId);
-      hasReconnected.current = true;
-    } else if (status === "listening" && callId && isMuted && !expanded) {
-      session.muteSpeaker();
-    }
-  }, [status]);
 
   useEffect(() => {
     // Set flag when page is about to refresh
@@ -170,16 +124,18 @@ const VoiceAIWidget = () => {
 
   // disconnecting
   useEffect(() => {
-    console.log("disconnecting up", status);
+    console.log("status", status);
 
-    if (status === "disconnecting") {
-      console.log("disconnecting down", status);
+    if (status === "disconnecting" && !hasClosed.current) {
+      console.log("auto disconnect");
 
       // Only run cleanup if this isn't a page refresh
       const isPageRefresh = sessionStorage.getItem("isRefreshing") === "true";
 
       if (!isPageRefresh) {
-        const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
+        const callSessionId = JSON.parse(
+          localStorage.getItem("callSessionId") || "[]"
+        );
 
         const handleClose = async () => {
           await session.leaveCall();
@@ -188,12 +144,12 @@ const VoiceAIWidget = () => {
           const response = await axios.post(
             `${baseurl}/api/end-call-session-ultravox/`,
             {
-              // call_session_id: callSessionId,
-              call_id: callId,
+              call_session_id: callSessionIds,
               schema_name: schema,
-              prior_call_ids: [...callSessionId, callId],
+              prior_call_ids: callSessionId,
             }
           );
+          hasClosed.current = false;
 
           setTranscripts(null);
           toggleVoice(false);
@@ -204,11 +160,32 @@ const VoiceAIWidget = () => {
     }
   }, [status]);
 
+  useEffect(() => {
+    const callId = localStorage.getItem("callId");
+    console.log(callId, status, hasReconnected.current);
+    if (callId && status === "disconnected" && !hasReconnected.current) {
+      setIsMuted(true);
+      handleMicClickForReconnect(callId);
+      hasReconnected.current = true;
+    } else if (status === "listening" && callId && isMuted && !expanded) {
+      session.muteSpeaker();
+    }
+  }, [status]);
+
   const handleMicClickForReconnect = async (id) => {
     try {
-      let existingCallSessionIds = [];
+      const response = await axios.post(`${baseurl}/api/start-thunder/`, {
+        agent_code: agent_id,
+        schema_name: schema,
+        prior_call_id: id,
+      });
 
-      const storedIds = localStorage.getItem("callSessionId");
+      const wssUrl = response.data.joinUrl;
+      const callId = response.data.callId;
+
+      localStorage.setItem("callId", callId);
+      // setCallId(callId);
+      setCallSessionIds(response.data.call_session_id);
       if (storedIds) {
         try {
           const parsedIds = JSON.parse(storedIds);
@@ -224,26 +201,13 @@ const VoiceAIWidget = () => {
       }
 
       // Append the new ID
-      existingCallSessionIds.push(id);
+      existingCallSessionIds.push(callId);
 
       // Store back in localStorage
       localStorage.setItem(
         "callSessionId",
         JSON.stringify(existingCallSessionIds)
       );
-
-      const response = await axios.post(`${baseurl}/api/start-thunder/`, {
-        agent_code: agent_id,
-        schema_name: schema,
-        prior_call_id: id,
-      });
-
-      const wssUrl = response.data.joinUrl;
-      const callId = response.data.callId;
-
-      localStorage.setItem("callId", callId);
-      setCallId(callId);
-      setCallSessionId(response.data.call_session_id);
 
       if (wssUrl) {
         await session.joinCall(`${wssUrl}`);
@@ -264,29 +228,46 @@ const VoiceAIWidget = () => {
 
         const wssUrl = response.data.joinUrl;
         const callId = response.data.callId;
-
         localStorage.setItem("callId", callId);
         localStorage.setItem("wssUrl", wssUrl);
-        setCallId(callId);
-        setCallSessionId(response.data.call_session_id);
+        setCallSessionIds(response.data.call_session_id);
+        if (storedIds) {
+          try {
+            const parsedIds = JSON.parse(storedIds);
+            // Ensure it's actually an array
+            if (Array.isArray(parsedIds)) {
+              existingCallSessionIds = parsedIds;
+            }
+          } catch (parseError) {
+            console.warn("Could not parse callSessionId:", parseError);
+            // Optional: clear invalid data
+            localStorage.removeItem("callSessionId");
+          }
+        }
+
+        // Append the new ID
+        existingCallSessionIds.push(callId);
+
+        // Store back in localStorage
+        localStorage.setItem(
+          "callSessionId",
+          JSON.stringify(existingCallSessionIds)
+        );
 
         if (wssUrl) {
           session.joinCall(`${wssUrl}`);
-        } else {
         }
         toggleVoice(true);
       } else {
         const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
-        const id = localStorage.getItem("callId");
         await session.leaveCall();
         console.log("call left successfully second time");
         const response = await axios.post(
           `${baseurl}/api/end-call-session-ultravox/`,
           {
-            call_session_id: callSessionId,
-            // call_id: callId,
+            call_session_id: callSessionIds,
             schema_name: schema,
-            prior_call_ids: [...callSessionId, id],
+            prior_call_ids: callSessionId,
           }
         );
 
@@ -374,22 +355,26 @@ const VoiceAIWidget = () => {
   };
 
   const handleClose = async () => {
-    const id = JSON.parse(localStorage.getItem("callSessionId"));
-    const callId = localStorage.getItem("callId");
-    setExpanded(!expanded);
-    localStorage.clear();
-    await session.leaveCall();
-    const response = await axios.post(
-      `${baseurl}/api/end-call-session-ultravox/`,
-      {
-        call_session_id: callSessionId,
-        // call_id: callId,
-        schema_name: schema,
-        prior_call_ids: [...id, callId],
-      }
-    );
-    setTranscripts(null);
-    toggleVoice(false);
+    if (status !== "disconnected") {
+      hasClosed.current = true;
+      const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
+      setExpanded(!expanded);
+      localStorage.clear();
+      await session.leaveCall();
+      const response = await axios.post(
+        `${baseurl}/api/end-call-session-ultravox/`,
+        {
+          call_session_id: callSessionIds,
+          schema_name: schema,
+          prior_call_ids: callSessionId,
+        }
+      );
+      hasClosed.current = false;
+      setTranscripts(null);
+      toggleVoice(false);
+    } else {
+      setExpanded(!expanded);
+    }
   };
 
   const toggleVoice = (data) => {
