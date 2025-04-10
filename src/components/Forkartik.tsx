@@ -28,7 +28,6 @@ const VoiceAIWidget = () => {
   const hasReconnected = useRef(false);
   const hasClosed = useRef(false);
 
-  const { agent_id, schema } = useWidgetContext();
   const { callSessionIds, setCallSessionIds } = useSessionStore();
   const {
     setSession,
@@ -40,6 +39,8 @@ const VoiceAIWidget = () => {
     setStatus,
   } = useUltravoxStore();
   const baseurl = "https://app.snowie.ai";
+  const { agent_id, schema } = useWidgetContext();
+
   // const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
   // const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
   let existingCallSessionIds: string[] = [];
@@ -220,7 +221,7 @@ const VoiceAIWidget = () => {
   // Handle mic button click
   const handleMicClick = async () => {
     try {
-      if (!isListening) {
+      if (status === "disconnected") {
         const response = await axios.post(`${baseurl}/api/start-thunder/`, {
           agent_code: agent_id,
           schema_name: schema,
