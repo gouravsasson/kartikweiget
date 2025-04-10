@@ -562,7 +562,7 @@ const VoiceAIWidget = () => {
                 <div className="absolute inset-0 -m-1 bg-yellow-400/40 rounded-full animate-ping"></div>
                 <div className="absolute inset-0 -m-3 bg-yellow-400/20 rounded-full animate-pulse"></div>
                 <span className="text-yellow-400 font-bold text-3xl relative z-10 drop-shadow-xl tracking-tighter">
-                  <img src={logo} alt="logo" className="w-12 h-12" />
+                  <img src={logo} alt="logo" className="w-[54px] h-[54px]" />
                 </span>
               </div>
             </button>
