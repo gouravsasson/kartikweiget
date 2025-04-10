@@ -568,7 +568,7 @@ const VoiceAIWidget = () => {
             </button>
             <button
               onClick={toggleExpand}
-              className="inline-block px-4 py-1 bg-black text-[#FFD700] border-4 border-[#FFD700] rounded-full font-inter font-bold text-sm no-underline text-center transition-all duration-300  hover:bg-black"
+              className="inline-block px-4 py-1 bg-black text-[#FFD700] border-2 border-[#FFD700] rounded-full font-inter font-bold text-sm no-underline text-center transition-all duration-300  hover:bg-black"
             >
               TALK TO ME
             </button>
