@@ -552,18 +552,28 @@ const VoiceAIWidget = () => {
           </div>
         </div>
       ) : (
-        <button
-          onClick={toggleExpand}
-          className="bg-black rounded-full w-16 h-16 flex items-center justify-center shadow-2xl border-2 border-yellow-400 hover:bg-gray-900 transition-all hover:scale-110 hover:shadow-yellow-400/50"
-        >
-          <div className="relative">
-            <div className="absolute inset-0 -m-1 bg-yellow-400/40 rounded-full animate-ping"></div>
-            <div className="absolute inset-0 -m-3 bg-yellow-400/20 rounded-full animate-pulse"></div>
-            <span className="text-yellow-400 font-bold text-3xl relative z-10 drop-shadow-xl tracking-tighter">
-              <img src={logo} alt="logo" className="w-10 h-10" />
-            </span>
+        <>
+          <div className="flex flex-col items-center justify-center">
+            <button
+              onClick={toggleExpand}
+              className="bg-black rounded-full w-16 h-16 flex items-center justify-center shadow-2xl border-2 border-yellow-400 hover:bg-gray-900 transition-all hover:scale-110 hover:shadow-yellow-400/50"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 -m-1 bg-yellow-400/40 rounded-full animate-ping"></div>
+                <div className="absolute inset-0 -m-3 bg-yellow-400/20 rounded-full animate-pulse"></div>
+                <span className="text-yellow-400 font-bold text-3xl relative z-10 drop-shadow-xl tracking-tighter">
+                  <img src={logo} alt="logo" className="w-10 h-10" />
+                </span>
+              </div>
+            </button>
+            <button
+              onClick={toggleExpand}
+              className="inline-block px-4 py-2 bg-black text-[#FFD700] border-4 border-[#FFD700] rounded-full font-inter font-bold text-sm no-underline text-center transition-all duration-300 hover:text-white hover:bg-black"
+            >
+              TALK TO ME
+            </button>
           </div>
-        </button>
+        </>
       )}
     </div>
   );
