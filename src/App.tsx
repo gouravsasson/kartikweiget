@@ -4,7 +4,7 @@ import { useWidgetContext } from "./constexts/WidgetContext";
 
 function App() {
   const { type } = useWidgetContext();
-  return <></>;
+  return <>{type === "test" && <Test/>}</>;
 }
 
 export default App;
