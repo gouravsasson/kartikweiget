@@ -4,7 +4,7 @@ import { useWidgetContext } from "./constexts/WidgetContext";
 
 function App() {
   const { type } = useWidgetContext();
-  return <>{type === "test" ? <Test /> : <Forkartik />}</>;
+  return <></>;
 }
 
 export default App;
