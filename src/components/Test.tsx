@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Mic, Send, X, Minimize2, Pause } from "lucide-react";
+import {
+  Mic,
+  Send,
+  X,
+  Minimize2,
+  Pause,
+  Phone,
+  User,
+  Mail,
+} from "lucide-react";
 import { MicOff } from "lucide-react";
 import axios from "axios";
 import { UltravoxSession } from "ultravox-client";
@@ -16,6 +25,7 @@ const Test = () => {
   const containerRef = useRef(null);
   const [isGlowing, setIsGlowing] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [fisrtisMuted, setfirstIsMuted] = useState(false);
   const [speech, setSpeech] = useState("");
   const [isVisible, setIsVisible] = useState(true);
   const [auto_end_call, setAutoEndCall] = useState(false);
@@ -41,7 +51,7 @@ const Test = () => {
   const baseurl = "https://app.snowie.ai";
   // const { agent_id, schema } = useWidgetContext();
 
-  const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
+  const agent_id = "23a1b978-a911-4e95-951f-d0fbe8a92f04";
   const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
   let existingCallSessionIds: string[] = [];
   const storedIds = localStorage.getItem("callSessionId");
@@ -67,7 +77,7 @@ const Test = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        console.log("gg", document.visibilityState);
+        // console.log("gg", document.visibilityState);
         session.muteSpeaker();
       } else if (document.visibilityState === "visible") {
         session.unmuteSpeaker();
@@ -125,10 +135,10 @@ const Test = () => {
 
   // disconnecting
   useEffect(() => {
-    console.log("status", status);
+    // console.log("status", status);
 
     if (status === "disconnecting" && !hasClosed.current) {
-      console.log("auto disconnect");
+      // console.log("auto disconnect");
 
       // Only run cleanup if this isn't a page refresh
       const isPageRefresh = sessionStorage.getItem("isRefreshing") === "true";
@@ -154,6 +164,7 @@ const Test = () => {
 
           setTranscripts(null);
           toggleVoice(false);
+          setfirstIsMuted(false);
         };
 
         handleClose();
@@ -163,9 +174,10 @@ const Test = () => {
 
   useEffect(() => {
     const callId = localStorage.getItem("callId");
-    console.log(callId, status, hasReconnected.current);
+    // console.log(callId, status, hasReconnected.current);
     if (callId && status === "disconnected" && !hasReconnected.current) {
       setIsMuted(true);
+      setfirstIsMuted(true);
       handleMicClickForReconnect(callId);
       hasReconnected.current = true;
     } else if (status === "listening" && callId && isMuted && !expanded) {
@@ -218,6 +230,16 @@ const Test = () => {
     }
   };
 
+  useEffect(() => {
+    if (status == "listening" && fisrtisMuted) {
+      console.log("status niche", status);
+      console.log("muting mic niche", fisrtisMuted);
+      session.muteSpeaker();
+
+      setfirstIsMuted(false);
+    }
+  }, [status]);
+
   // Handle mic button click
   const handleMicClick = async () => {
     try {
@@ -232,6 +254,7 @@ const Test = () => {
         localStorage.setItem("callId", callId);
         localStorage.setItem("wssUrl", wssUrl);
         setCallSessionIds(response.data.call_session_id);
+        setfirstIsMuted(true);
         if (storedIds) {
           try {
             const parsedIds = JSON.parse(storedIds);
@@ -275,6 +298,7 @@ const Test = () => {
         // console.log("Call left successfully");
         setTranscripts(null);
         toggleVoice(false);
+        setfirstIsMuted(false);
         localStorage.clear();
       }
     } catch (error) {
@@ -306,9 +330,9 @@ const Test = () => {
     // console.log("Session status changed: ", session.status);
   });
 
-  session.addEventListener("experimental_message", (msg) => {
-    console.log("Got a debug message: ", JSON.stringify(msg));
-  });
+  // session.addEventListener("experimental_message", (msg) => {
+  //   console.log("Got a debug message: ", JSON.stringify(msg));
+  // });
 
   // Animated pulse effects for recording state
   useEffect(() => {
@@ -373,6 +397,7 @@ const Test = () => {
       hasClosed.current = false;
       setTranscripts(null);
       toggleVoice(false);
+      setfirstIsMuted(false);
     } else {
       setExpanded(!expanded);
     }
@@ -398,7 +423,7 @@ const Test = () => {
     >
       {expanded ? (
         <div
-          className={`bg-gray-900/50 backdrop-blur-sm w-[309px] h-[521px] rounded-2xl shadow-2xl overflow-hidden border ${
+          className={`bg-gray-900/50 backdrop-blur-sm w-[309px]  rounded-2xl shadow-2xl overflow-hidden border ${
             isGlowing
               ? "border-yellow-300 shadow-yellow-400/40"
               : "border-yellow-400"
@@ -440,7 +465,6 @@ const Test = () => {
             <div className="absolute w-full h-64 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/10 rounded-full blur-3xl"></div>
             <div className="absolute w-52 h-52  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full blur-xl animate-pulse"></div>
             <div className="absolute w-40 h-40  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/25 rounded-full blur-md animate-pulse"></div>
-
             {/* Decorative elements */}
             {/* <div className="absolute w-full h-full">
               <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping"></div>
@@ -449,7 +473,6 @@ const Test = () => {
               <div className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-500"></div>
               <div className="absolute top-1/2 left-1/5 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-200"></div>
             </div> */}
-
             {/* Microphone button with pulse animations */}
             <div className="relative">
               {isRecording && pulseEffects.small && (
@@ -490,39 +513,72 @@ const Test = () => {
                 </div>
               </button>
             </div>
-
             <p className="text-yellow-400 text-sm mt-5 font-medium drop-shadow-md bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm border border-yellow-400/20">
               {speech}
             </p>
+            <div className=" flex flex-col gap-4 m-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  // value={formData.name}
+                  // onChange={(e) =>
+                  //   setFormData({ ...formData, name: e.target.value })
+                  // }
+                  className="block w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+                  placeholder="Your name"
+                />
+              </div>
 
+              <div className="relative">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  // value={formData.email}
+                  // onChange={(e) =>
+                  //   setFormData({ ...formData, email: e.target.value })
+                  // }
+                  className="block w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+                  placeholder="Email address"
+                />
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                  <Phone className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="tel"
+                  // value={formData.phone}
+                  // onChange={(e) =>
+                  //   setFormData({ ...formData, phone: e.target.value })
+                  // }
+                  className="block w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+                  placeholder="Phone number"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-yellow-400 text-black font-semibold py-4 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
+              >
+                Continue Conversation
+              </button>
+            </div>
             {/* Transcription Box with enhanced styling */}
-            <div className="relative p-4 w-full ">
+            {/* <div className="relative p-4 w-full ">
               <div className="absolute inset-0 "></div>
               <div className="relative">
-                <div className="flex justify-between items-center mb-2">
-                  {/* <div className="text-yellow-400 text-sm font-medium">
+                <div className="flex justify-between items-center mb-2"> */}
+            {/* <div className="text-yellow-400 text-sm font-medium">
                   Real-time transcription
                 </div> */}
-                  {isRecording && (
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></div>
-                      <span className="text-red-400 text-xs">LIVE</span>
-                    </div>
-                  )}
-                </div>
-                <div
-                  ref={containerRef}
-                  className=" bg-white backdrop-blur-sm rounded-xl p-4 h-16 text-white shadow-inner border border-gray-800 overflow-y-auto scrollbar-hide ring-yellow-400/80"
-                >
-                  <div className="relative">
-                    <span className="text-black">{transcripts}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Input Area with glass effect */}
-            <div className="relative p-3 ">
+            {/* <div className="relative p-3 ">
               <div className="absolute inset-0"></div>
               <div className="relative flex items-center space-x-2">
                 <input
@@ -548,7 +604,7 @@ const Test = () => {
                   <Send size={20} className="text-black" />
                 </button>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       ) : (
