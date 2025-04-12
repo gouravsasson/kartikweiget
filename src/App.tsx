@@ -9,12 +9,13 @@ import {
 } from "@livekit/components-react";
 import { useState } from "react";
 function App() {
-  const { type } = useWidgetContext();
+  // const { type } = useWidgetContext();
   // console.log(type);
 
   return (
     <>
-      {type === "livekit" && <RetellaiAgent />}
+      {/* {type === "livekit" && <RetellaiAgent />} */}
+      <RetellaiAgent />
       {/* {type === "test" && <Test />} */}
     </>
   );

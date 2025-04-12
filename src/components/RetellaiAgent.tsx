@@ -30,34 +30,9 @@ const RetellaiAgent = () => {
   const status = useConnectionState(room);
   console.log(status);
 
-  const [mediaStream, setMediaStream] = useState(null);
-
   const [token, setToken] = useState("");
   console.log(token);
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
-
-  useEffect(() => {
-    // Request microphone access on mount
-    const getAudioStream = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-        setMediaStream(stream);
-      } catch (err) {
-        console.error("Error accessing microphone:", err);
-      }
-    };
-
-    getAudioStream();
-
-    // Cleanup function to stop media stream when component unmounts
-    return () => {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, []);
 
   const toggleExpand = async () => {
     if (!expanded && status === "disconnected") {
@@ -73,9 +48,11 @@ const RetellaiAgent = () => {
         );
         setToken(getToken.data.response.access_token);
         await room.connect(serverUrl, getToken.data.response.access_token);
-        if (mediaStream) {
-          room.localParticipant.publishTrack(mediaStream.getAudioTracks()[0]);
-        }
+        const audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        const [audioTrack] = audioStream.getAudioTracks();
+        await room.localParticipant.publishTrack(audioTrack);
       } catch (err) {
         console.error("Connection error:", err);
       }
@@ -116,7 +93,7 @@ const RetellaiAgent = () => {
   };
 
   return (
-    <LiveKitRoom token={token} serverUrl={serverUrl} audio connect={false}>
+    <LiveKitRoom token={token} serverUrl={serverUrl} connect={false}>
       <RoomContext.Provider value={room}>
         <div
           className="fixed bottom-6 right-6 z-50 flex flex-col items-end"
