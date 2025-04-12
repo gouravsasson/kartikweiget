@@ -58,32 +58,6 @@ const MicButton = ({ isRecording, isGlowing, onClick }) => {
   );
 };
 
-// Chat Messages Display
-const ChatMessages = ({ messages }) => {
-  const endRef = useRef(null);
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  return (
-    <div className="max-h-40 overflow-y-auto px-4 py-2 space-y-1 text-sm w-full text-white">
-      {messages.map((msg, idx) => (
-        <div
-          key={idx}
-          className={
-            msg.sender === "me"
-              ? "text-right text-yellow-300"
-              : "text-left text-gray-200"
-          }
-        >
-          <span className="block">{msg.text}</span>
-        </div>
-      ))}
-      <div ref={endRef} />
-    </div>
-  );
-};
-
 // User Form Input
 const UserForm = ({ formData, setFormData, onSubmit, error }) => (
   <form onSubmit={onSubmit}>
@@ -147,8 +121,6 @@ const RetellaiAgent = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
   const [speech, setSpeech] = useState("");
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
   const [token, setToken] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState("");
@@ -157,24 +129,30 @@ const RetellaiAgent = () => {
   const status = useConnectionState(room);
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
+  const [priorCallId, setPriorCallId] = useState("");
 
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
 
+  // for first time
   const toggleExpand = async () => {
-    if (!expanded && status === "disconnected" && !isConnecting) {
+    if (
+      !expanded &&
+      status === "disconnected" &&
+      !isConnecting &&
+      !priorCallId
+    ) {
       setIsConnecting(true);
       try {
         const res = await axios.post(
-          "https://danube.closerx.ai/api/create-web-call/",
+          "https://danube.closerx.ai/api/create-greeting-web-call/",
           {
             schema_name: "Danubeproperty",
-            agent_code: 14,
-            quick_campaign_id: "quickcamp33bfe31d",
+            agent_code: 15,
+            quick_campaign_id: "quickcamp0c6c67bd",
           }
         );
         const accessToken = res.data.response.access_token;
         setToken(accessToken);
-
         await room.connect(serverUrl, accessToken);
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
@@ -209,15 +187,29 @@ const RetellaiAgent = () => {
     setIsGlowing(false);
   };
 
-  const handleClose = () => {
-    stopRecording();
-    setSpeech("");
-    setExpanded(false);
-    room.disconnect();
+  const handleClose = async () => {
+    const priorCallIdList = JSON.parse(
+      localStorage.getItem("priorCallIdList") || "[]"
+    );
+    const endcall = await axios.post(
+      "https://danube.closerx.ai/api/end-web-call/",
+      {
+        schema_name: "Danubeproperty",
+        prior_call_ids: priorCallIdList,
+      }
+    );
+    if (endcall.status === 200) {
+      stopRecording();
+      setSpeech("");
+      setExpanded(false);
+      localStorage.clear();
+      room.disconnect();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     await room.disconnect();
 
     try {
@@ -230,7 +222,21 @@ const RetellaiAgent = () => {
           ...formData,
         }
       );
+
       const accessToken = res.data.response.access_token;
+      const newCallId = res.data.response.call_id;
+
+      if (newCallId) {
+        const priorCallIdList = JSON.parse(
+          localStorage.getItem("priorCallIdList") || "[]"
+        );
+        priorCallIdList.push(newCallId);
+        localStorage.setItem(
+          "priorCallIdList",
+          JSON.stringify(priorCallIdList)
+        );
+      }
+
       setToken(accessToken);
 
       await room.connect(serverUrl, accessToken);
@@ -244,6 +250,57 @@ const RetellaiAgent = () => {
       setError("Unable to continue conversation.");
     }
   };
+  useEffect(() => {
+    const priorCallIdList = JSON.parse(
+      localStorage.getItem("priorCallIdList") || "[]"
+    );
+    const initiateCall = async () => {
+      try {
+        if (priorCallIdList.length > 0) {
+          const res = await axios.post(
+            "https://danube.closerx.ai/api/create-web-call/",
+            {
+              schema_name: "Danubeproperty",
+              agent_code: 14,
+              quick_campaign_id: "quickcamp33bfe31d",
+              prior_call_id: priorCallIdList[priorCallIdList.length - 1],
+              // ...formData,
+            }
+          );
+
+          const accessToken = res.data.response.access_token;
+          const newCallId = res.data.response.call_id;
+
+          if (newCallId) {
+            const priorCallIdList = JSON.parse(
+              localStorage.getItem("priorCallIdList") || "[]"
+            );
+            priorCallIdList.push(newCallId);
+            localStorage.setItem(
+              "priorCallIdList",
+              JSON.stringify(priorCallIdList)
+            );
+          }
+
+          setToken(accessToken);
+
+          await room.connect(serverUrl, accessToken);
+
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          const [audioTrack] = stream.getAudioTracks();
+          await room.localParticipant.publishTrack(audioTrack);
+          audioTrackRef.current = audioTrack;
+        }
+      } catch (err) {
+        console.error("Form error:", err);
+        setError("Unable to continue conversation.");
+      }
+    };
+
+    initiateCall();
+  }, [formData, room, serverUrl]);
 
   return (
     <LiveKitRoom token={token} serverUrl={serverUrl} connect={false}>
@@ -270,7 +327,6 @@ const RetellaiAgent = () => {
                 <p className="text-yellow-400 text-sm mt-5 font-medium">
                   {speech}
                 </p>
-                <ChatMessages messages={messages} />
                 <UserForm
                   formData={formData}
                   setFormData={setFormData}
