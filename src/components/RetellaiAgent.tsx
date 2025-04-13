@@ -163,13 +163,14 @@ const RetellaiAgent = () => {
 
   // for first time
   const toggleExpand = async () => {
+    setExpanded(!expanded);
     if (
       !expanded &&
       status === "disconnected" &&
       !isConnecting &&
       !priorCallId
     ) {
-      setExpanded(!expanded);
+      
       setIsConnecting(true);
       try {
         const res = await axios.post(
