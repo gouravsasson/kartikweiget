@@ -7,16 +7,24 @@ import {
   LiveKitRoom,
   ConnectionState,
 } from "@livekit/components-react";
+import { Room } from "livekit-client";
+
 import { useState } from "react";
 function App() {
+  const [room] = useState(() => new Room({}));
+
   const { type } = useWidgetContext();
   // console.log(type);
 
   return (
     <>
-      {type === "livekit" && <RetellaiAgent />}
-      {/* <RetellaiAgent /> */}
-      {/* {type === "test" && <Test />} */}
+      <LiveKitRoom token="" serverUrl="" room={room} connect={false}>
+        {/* <RoomContext.Provider > */}
+        {type === "livekit" && <RetellaiAgent />}
+        {/* <RetellaiAgent /> */}
+        {/* {type === "test" && <Test />} */}
+        {/* </RoomContext.Provider> */}
+      </LiveKitRoom>
     </>
   );
 }

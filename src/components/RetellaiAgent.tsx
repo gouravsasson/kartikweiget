@@ -6,6 +6,8 @@ import {
   LiveKitRoom,
   RoomAudioRenderer,
   useConnectionState,
+  useSpeakingParticipants,
+  useRoomContext,
 } from "@livekit/components-react";
 import { Room } from "livekit-client";
 import axios from "axios";
@@ -124,14 +126,32 @@ const RetellaiAgent = () => {
   const [token, setToken] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState("");
-
-  const [room] = useState(() => new Room({}));
+  const room = useRoomContext();
   const status = useConnectionState(room);
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [priorCallId, setPriorCallId] = useState("");
+  const [muted, setMuted] = useState(false);
+  console.log(muted);
 
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        console.log("gg", document.visibilityState);
+        setMuted(true);
+      } else if (document.visibilityState === "visible") {
+        setMuted(false);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   // for first time
   const toggleExpand = async () => {
@@ -166,6 +186,9 @@ const RetellaiAgent = () => {
       } finally {
         setIsConnecting(false);
       }
+    }
+    if (muted) {
+      setMuted(false);
     }
     setExpanded(!expanded);
   };
@@ -255,6 +278,7 @@ const RetellaiAgent = () => {
       localStorage.getItem("priorCallIdList") || "[]"
     );
     const initiateCall = async () => {
+      console.log("initiateCall");
       try {
         if (priorCallIdList.length > 0) {
           const res = await axios.post(
@@ -285,6 +309,7 @@ const RetellaiAgent = () => {
           setToken(accessToken);
 
           await room.connect(serverUrl, accessToken);
+          setMuted(true);
 
           const stream = await navigator.mediaDevices.getUserMedia({
             audio: true,
@@ -298,63 +323,58 @@ const RetellaiAgent = () => {
         setError("Unable to continue conversation.");
       }
     };
-
     initiateCall();
-  }, [formData, room, serverUrl]);
+  }, []);
+
+  const handleMinimize = () => {
+    setExpanded(false);
+    setMuted(true);
+  };
 
   return (
-    <LiveKitRoom token={token} serverUrl={serverUrl} connect={false}>
-      <RoomContext.Provider value={room}>
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-          {expanded ? (
-            <div
-              className={`bg-gray-900/50 backdrop-blur-sm w-[309px] rounded-2xl shadow-2xl overflow-hidden border ${
-                isGlowing
-                  ? "border-yellow-300 shadow-yellow-400/40"
-                  : "border-yellow-400"
-              } transition-all duration-500`}
-            >
-              <Header
-                onMinimize={() => setExpanded(false)}
-                onClose={handleClose}
-              />
-              <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full">
-                <MicButton
-                  isRecording={isRecording}
-                  isGlowing={isGlowing}
-                  onClick={handleMicClick}
-                />
-                <p className="text-yellow-400 text-sm mt-5 font-medium">
-                  {speech}
-                </p>
-                <UserForm
-                  formData={formData}
-                  setFormData={setFormData}
-                  onSubmit={handleSubmit}
-                  error={error}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-1 justify-center">
-              <button
-                onClick={toggleExpand}
-                className="bg-black rounded-full w-20 h-20 flex items-center justify-center shadow-2xl border-2 border-yellow-400 hover:scale-110"
-              >
-                <img src={logo} alt="logo" className="w-[54px] h-[54px]" />
-              </button>
-              <button
-                onClick={toggleExpand}
-                className="px-4 py-1 bg-black text-yellow-400 border-2 border-yellow-400 rounded-full text-sm font-bold"
-              >
-                TALK TO ME
-              </button>
-            </div>
-          )}
-          <RoomAudioRenderer />
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      {expanded ? (
+        <div
+          className={`bg-gray-900/50 backdrop-blur-sm w-[309px] rounded-2xl shadow-2xl overflow-hidden border ${
+            isGlowing
+              ? "border-yellow-300 shadow-yellow-400/40"
+              : "border-yellow-400"
+          } transition-all duration-500`}
+        >
+          <Header onMinimize={handleMinimize} onClose={handleClose} />
+          <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full">
+            <MicButton
+              isRecording={isRecording}
+              isGlowing={isGlowing}
+              onClick={handleMicClick}
+            />
+            <p className="text-yellow-400 text-sm mt-5 font-medium">{speech}</p>
+            <UserForm
+              formData={formData}
+              setFormData={setFormData}
+              onSubmit={handleSubmit}
+              error={error}
+            />
+          </div>
         </div>
-      </RoomContext.Provider>
-    </LiveKitRoom>
+      ) : (
+        <div className="flex flex-col items-center gap-1 justify-center">
+          <button
+            onClick={toggleExpand}
+            className="bg-black rounded-full w-20 h-20 flex items-center justify-center shadow-2xl border-2 border-yellow-400 hover:scale-110"
+          >
+            <img src={logo} alt="logo" className="w-[54px] h-[54px]" />
+          </button>
+          <button
+            onClick={toggleExpand}
+            className="px-4 py-1 bg-black text-yellow-400 border-2 border-yellow-400 rounded-full text-sm font-bold"
+          >
+            TALK TO ME
+          </button>
+        </div>
+      )}
+      <RoomAudioRenderer muted={muted} />
+    </div>
   );
 };
 
