@@ -169,6 +169,7 @@ const RetellaiAgent = () => {
       !isConnecting &&
       !priorCallId
     ) {
+      setExpanded(!expanded);
       setIsConnecting(true);
       try {
         const res = await axios.post(
@@ -198,7 +199,6 @@ const RetellaiAgent = () => {
     if (muted) {
       setMuted(false);
     }
-    setExpanded(!expanded);
   };
 
   const handleMicClick = () => {
