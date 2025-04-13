@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Mic, Send, X, Minimize2, Phone, Mail, User } from "lucide-react";
 import logo from "../assets/logo.png";
 import {
-  RoomContext,
-  LiveKitRoom,
   RoomAudioRenderer,
   useConnectionState,
-  useSpeakingParticipants,
+  useParticipants,
   useRoomContext,
 } from "@livekit/components-react";
-import { Room } from "livekit-client";
+
+import { DataPacket_Kind, RemoteParticipant, RoomEvent } from "livekit-client";
 import axios from "axios";
 
 // Header Component
@@ -88,7 +87,7 @@ const UserForm = ({ formData, setFormData, onSubmit, error }) => (
         },
       ].map((field, index) => (
         <div className="relative" key={index}>
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+          <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
             {field.icon}
           </div>
           <input
@@ -97,7 +96,7 @@ const UserForm = ({ formData, setFormData, onSubmit, error }) => (
             onChange={(e) =>
               setFormData({ ...formData, [field.key]: e.target.value })
             }
-            className="block w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
             placeholder={field.placeholder}
           />
         </div>
@@ -105,7 +104,7 @@ const UserForm = ({ formData, setFormData, onSubmit, error }) => (
 
       <button
         type="submit"
-        className="w-full bg-yellow-400 text-black font-semibold py-4 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
+        className="w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
       >
         Continue Conversation
       </button>
@@ -123,18 +122,27 @@ const RetellaiAgent = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
   const [speech, setSpeech] = useState("");
-  const [token, setToken] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState("");
   const room = useRoomContext();
+  const [token, setToken] = useState("");
   const status = useConnectionState(room);
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [priorCallId, setPriorCallId] = useState("");
   const [muted, setMuted] = useState(false);
-  console.log(muted);
-
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+
+  const handleFormShow = () => {
+    const formshow = localStorage.getItem("formshow");
+    if (formshow === "true") {
+      return false;
+    } else {
+      return true;
+    }
+  };
+  const showform = handleFormShow();
+  console.log("showform", showform);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -248,6 +256,7 @@ const RetellaiAgent = () => {
 
       const accessToken = res.data.response.access_token;
       const newCallId = res.data.response.call_id;
+      localStorage.setItem("formshow", "true");
 
       if (newCallId) {
         const priorCallIdList = JSON.parse(
@@ -349,12 +358,39 @@ const RetellaiAgent = () => {
               onClick={handleMicClick}
             />
             <p className="text-yellow-400 text-sm mt-5 font-medium">{speech}</p>
-            <UserForm
-              formData={formData}
-              setFormData={setFormData}
-              onSubmit={handleSubmit}
-              error={error}
-            />
+            {showform ? (
+              <UserForm
+                formData={formData}
+                setFormData={setFormData}
+                onSubmit={handleSubmit}
+                error={error}
+              />
+            ) : (
+              <div className="relative p-4 w-full ">
+                <div className="absolute inset-0 "></div>
+                <div className="relative">
+                  <div className="flex justify-between items-center mb-2">
+                    {/* <div className="text-yellow-400 text-sm font-medium">
+                  Real-time transcription
+                </div> */}
+                    {isRecording && (
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></div>
+                        <span className="text-red-400 text-xs">LIVE</span>
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    // ref={containerRef}
+                    className=" bg-white backdrop-blur-sm rounded-xl p-4 h-16 text-white shadow-inner border border-gray-800 overflow-y-auto scrollbar-hide ring-yellow-400/80"
+                  >
+                    <div className="relative">
+                      {/* <span className="text-black">{transcripts}</span> */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -373,6 +409,7 @@ const RetellaiAgent = () => {
           </button>
         </div>
       )}
+
       <RoomAudioRenderer muted={muted} />
     </div>
   );

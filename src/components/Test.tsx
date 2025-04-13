@@ -570,15 +570,15 @@ const Test = () => {
               </button>
             </div>
             {/* Transcription Box with enhanced styling */}
-            {/* <div className="relative p-4 w-full ">
+            <div className="relative p-4 w-full ">
               <div className="absolute inset-0 "></div>
               <div className="relative">
-                <div className="flex justify-between items-center mb-2"> */}
-            {/* <div className="text-yellow-400 text-sm font-medium">
+                <div className="flex justify-between items-center mb-2">
+            <div className="text-yellow-400 text-sm font-medium">
                   Real-time transcription
-                </div> */}
-            {/* Input Area with glass effect */}
-            {/* <div className="relative p-3 ">
+                </div> 
+             {/* Input Area with glass effect */}
+             <div className="relative p-3 ">
               <div className="absolute inset-0"></div>
               <div className="relative flex items-center space-x-2">
                 <input
@@ -603,8 +603,9 @@ const Test = () => {
                 >
                   <Send size={20} className="text-black" />
                 </button>
+                </div>
               </div>
-            </div> */}
+            </div>
           </div>
         </div>
       ) : (
