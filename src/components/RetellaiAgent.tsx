@@ -554,7 +554,9 @@ const RetellaiAgent = () => {
         </>
       )}
 
-      <RoomAudioRenderer muted={muted} />
+      <RoomAudioRenderer
+      // muted={muted}
+      />
     </div>
   );
 };
