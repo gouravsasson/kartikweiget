@@ -197,11 +197,6 @@ const RetellaiAgent = () => {
 
   // for first time
   const toggleExpand = async () => {
-    localStorage.setItem("formshow", "false");
-    setTimeout(() => {
-      setShowform(true);
-    }, 40000);
-
     setExpanded(!expanded);
     if (
       !expanded &&
@@ -209,6 +204,10 @@ const RetellaiAgent = () => {
       !isConnecting &&
       !priorCallId
     ) {
+      localStorage.setItem("formshow", "false");
+      setTimeout(() => {
+        setShowform(true);
+      }, 40000);
       setIsConnecting(true);
       try {
         const res = await axios.post(
@@ -304,7 +303,7 @@ const RetellaiAgent = () => {
 
       const accessToken = res.data.response.access_token;
       const newCallId = res.data.response.call_id;
-      localStorage.setItem("formshow", "true");
+      localStorage.setItem("formshow", "false");
 
       if (newCallId) {
         const priorCallIdList = JSON.parse(
