@@ -159,7 +159,7 @@ const RetellaiAgent = () => {
       let decodedData = decoder.decode(payload);
       let event = JSON.parse(decodedData);
       if (event.event_type === "update") {
-        console.log("update", event.transcript[0].content);
+        // console.log("update", event.transcript[0].content);
         const alltrans = event.transcript;
 
         let Trans = "";
