@@ -360,7 +360,6 @@ const VoiceAIWidget = () => {
       hasClosed.current = true;
       const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
       setExpanded(!expanded);
-      localStorage.clear();
       await session.leaveCall();
       const response = await axios.post(
         `${baseurl}/api/end-call-session-ultravox/`,
@@ -371,6 +370,8 @@ const VoiceAIWidget = () => {
         }
       );
       hasClosed.current = false;
+      localStorage.clear();
+
       setTranscripts(null);
       toggleVoice(false);
     } else {

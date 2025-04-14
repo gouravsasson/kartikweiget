@@ -136,16 +136,14 @@ const RetellaiAgent = () => {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
 
   const handleFormShow = () => {
-    const formshow = localStorage.getItem("formshow") === "true";
-    console.log("formshow", formshow);
-
-    if (formshow) {
-      return true;
-    } else {
-      return false;
-    }
+    return localStorage.getItem("formshow") === "true";
   };
-  const [showform, setShowform] = useState(handleFormShow());
+  console.log("function ", handleFormShow());
+  const [showform, setShowform] = useState(handleFormShow);
+
+  const refreshFormShow = () => {
+    setShowform(handleFormShow());
+  };
 
   console.log("showform", showform);
 
@@ -303,7 +301,6 @@ const RetellaiAgent = () => {
 
       const accessToken = res.data.response.access_token;
       const newCallId = res.data.response.call_id;
-      localStorage.setItem("formshow", "false");
 
       if (newCallId) {
         const priorCallIdList = JSON.parse(
@@ -324,6 +321,9 @@ const RetellaiAgent = () => {
       const [audioTrack] = stream.getAudioTracks();
       await room.localParticipant.publishTrack(audioTrack);
       audioTrackRef.current = audioTrack;
+      setTranscripts("");
+      localStorage.setItem("formshow", "false");
+      refreshFormShow();
     } catch (err) {
       console.error("Form error:", err);
       setError("Unable to continue conversation.");
