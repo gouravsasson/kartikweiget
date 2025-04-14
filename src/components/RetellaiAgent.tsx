@@ -4,10 +4,8 @@ import logo from "../assets/logo.png";
 import {
   RoomAudioRenderer,
   useConnectionState,
-  useParticipants,
   useRoomContext,
 } from "@livekit/components-react";
-
 import { DataPacket_Kind, RemoteParticipant, RoomEvent } from "livekit-client";
 import axios from "axios";
 
@@ -118,6 +116,9 @@ const UserForm = ({ formData, setFormData, onSubmit, error }) => (
 
 // Main Component
 const RetellaiAgent = () => {
+  const decoder = new TextDecoder();
+  const containerRef = useRef(null);
+
   const [expanded, setExpanded] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
@@ -131,18 +132,51 @@ const RetellaiAgent = () => {
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [priorCallId, setPriorCallId] = useState("");
   const [muted, setMuted] = useState(false);
+  const [transcripts, setTranscripts] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
 
   const handleFormShow = () => {
-    const formshow = localStorage.getItem("formshow");
-    if (formshow === "true") {
-      return false;
-    } else {
+    const formshow = localStorage.getItem("formshow") === "true";
+    console.log("formshow", formshow);
+
+    if (formshow) {
       return true;
+    } else {
+      return false;
     }
   };
-  const showform = handleFormShow();
+  const [showform, setShowform] = useState(handleFormShow());
+
   console.log("showform", showform);
+
+  room.on(
+    RoomEvent.DataReceived,
+    (
+      payload: Uint8Array,
+      participant?: RemoteParticipant,
+      kind?: DataPacket_Kind,
+      topic?: string
+    ) => {
+      let decodedData = decoder.decode(payload);
+      let event = JSON.parse(decodedData);
+      if (event.event_type === "update") {
+        console.log("update", event.transcript[0].content);
+        const alltrans = event.transcript;
+
+        let Trans = "";
+
+        for (let index = 0; index < alltrans.length; index++) {
+          const currentTranscript = alltrans[index];
+
+          Trans = currentTranscript.content;
+
+          if (currentTranscript) {
+            setTranscripts(Trans);
+          }
+        }
+      }
+    }
+  );
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -163,6 +197,11 @@ const RetellaiAgent = () => {
 
   // for first time
   const toggleExpand = async () => {
+    localStorage.setItem("formshow", "false");
+    setTimeout(() => {
+      setShowform(true);
+    }, 40000);
+
     setExpanded(!expanded);
     if (
       !expanded &&
@@ -170,7 +209,6 @@ const RetellaiAgent = () => {
       !isConnecting &&
       !priorCallId
     ) {
-      
       setIsConnecting(true);
       try {
         const res = await axios.post(
@@ -223,12 +261,21 @@ const RetellaiAgent = () => {
     const priorCallIdList = JSON.parse(
       localStorage.getItem("priorCallIdList") || "[]"
     );
+
+    const data =
+      priorCallIdList.length > 0
+        ? {
+            schema_name: "Danubeproperty",
+            prior_call_ids: priorCallIdList,
+          }
+        : {
+            prior_call_ids: "",
+            schema_name: "Danubeproperty",
+          };
+    console.log("data", data);
     const endcall = await axios.post(
       "https://danube.closerx.ai/api/end-web-call/",
-      {
-        schema_name: "Danubeproperty",
-        prior_call_ids: priorCallIdList,
-      }
+      data
     );
     if (endcall.status === 200) {
       stopRecording();
@@ -341,6 +388,13 @@ const RetellaiAgent = () => {
     setMuted(true);
   };
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [transcripts]);
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {expanded ? (
@@ -382,11 +436,11 @@ const RetellaiAgent = () => {
                     )}
                   </div>
                   <div
-                    // ref={containerRef}
+                    ref={containerRef}
                     className=" bg-white backdrop-blur-sm rounded-xl p-4 h-16 text-white shadow-inner border border-gray-800 overflow-y-auto scrollbar-hide ring-yellow-400/80"
                   >
                     <div className="relative">
-                      {/* <span className="text-black">{transcripts}</span> */}
+                      <span className="text-black">{transcripts}</span>
                     </div>
                   </div>
                 </div>
