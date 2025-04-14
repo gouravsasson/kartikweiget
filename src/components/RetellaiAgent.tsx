@@ -16,6 +16,7 @@ import {
   Track,
 } from "livekit-client";
 import axios from "axios";
+import CountryCode from "./CountryCode";
 
 // Header Component
 const Header = ({ onMinimize, onClose }) => (
@@ -108,7 +109,14 @@ const MicButton = ({ isRecording, isGlowing, onClick }) => {
 };
 
 // User Form Input
-const UserForm = ({ formData, setFormData, onSubmit, error, state }) => (
+const UserForm = ({
+  formData,
+  setFormData,
+  onSubmit,
+  error,
+  state,
+  handleCountryCode,
+}) => (
   <form onSubmit={onSubmit}>
     <div className="flex flex-col gap-4 m-4">
       {[
@@ -118,6 +126,7 @@ const UserForm = ({ formData, setFormData, onSubmit, error, state }) => (
           type: "text",
           placeholder: "Your name",
           key: "name",
+          component: "",
         },
         {
           icon: <Mail className="h-5 w-5 text-gray-400" />,
@@ -125,6 +134,7 @@ const UserForm = ({ formData, setFormData, onSubmit, error, state }) => (
           type: "email",
           placeholder: "Email address",
           key: "email",
+          component: "",
         },
         {
           icon: <Phone className="h-5 w-5 text-gray-400" />,
@@ -132,21 +142,28 @@ const UserForm = ({ formData, setFormData, onSubmit, error, state }) => (
           type: "tel",
           placeholder: "Phone number",
           key: "phone",
+          component: <CountryCode data={handleCountryCode} />,
         },
       ].map((field, index) => (
         <div className="relative" key={index}>
           <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
             {field.icon}
           </div>
-          <input
-            type={field.type}
-            value={field.value}
-            onChange={(e) =>
-              setFormData({ ...formData, [field.key]: e.target.value })
-            }
-            className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-            placeholder={field.placeholder}
-          />
+
+          <div className="flex items-center">
+            {field.component}
+            <input
+              type={field.type}
+              value={field.value}
+              onChange={(e) =>
+                setFormData({ ...formData, [field.key]: e.target.value })
+              }
+              className={`block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition ${
+                field.component && " rounded-l-none !pl-2"
+              }`}
+              placeholder={field.placeholder}
+            />
+          </div>
         </div>
       ))}
 
@@ -170,7 +187,7 @@ const UserForm = ({ formData, setFormData, onSubmit, error, state }) => (
 const RetellaiAgent = () => {
   const decoder = new TextDecoder();
   const containerRef = useRef(null);
-
+  const [countryCode, setCountryCode] = useState("+1");
   const [expanded, setExpanded] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
@@ -182,7 +199,6 @@ const RetellaiAgent = () => {
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [muted, setMuted] = useState(false);
-  console.log("muted", muted);
   const [transcripts, setTranscripts] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
   const [pulseEffects, setPulseEffects] = useState({
@@ -231,10 +247,8 @@ const RetellaiAgent = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        console.log("hidden");
         setMuted(true);
       } else if (document.visibilityState === "visible") {
-        console.log("visible");
         setMuted(false);
       }
     };
@@ -251,7 +265,6 @@ const RetellaiAgent = () => {
     const priorCallIdList = JSON.parse(
       localStorage.getItem("priorCallIdList") || "[]"
     );
-    console.log("priorCallIdList", priorCallIdList);
     setExpanded(true);
     if (
       !expanded &&
@@ -326,7 +339,6 @@ const RetellaiAgent = () => {
             prior_call_ids: [],
             schema_name: "Danubeproperty",
           };
-    console.log("data", data);
     const endcall = await axios.post(
       "https://danube.closerx.ai/api/end-web-call/",
       data
@@ -352,7 +364,9 @@ const RetellaiAgent = () => {
           schema_name: "Danubeproperty",
           agent_code: 14,
           quick_campaign_id: "quickcamp33bfe31d",
-          ...formData,
+          phone: countryCode + formData.phone,
+          name: formData.name,
+          email: formData.email,
         }
       );
 
@@ -373,6 +387,7 @@ const RetellaiAgent = () => {
       setToken(accessToken);
 
       await room.connect(serverUrl, accessToken);
+      setMuted(false);
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const [audioTrack] = stream.getAudioTracks();
@@ -398,7 +413,6 @@ const RetellaiAgent = () => {
     );
 
     const initiateCall = async () => {
-      console.log("initiateCall");
       try {
         if (priorCallIdList.length > 0 && !oneref.current) {
           oneref.current = true;
@@ -445,6 +459,10 @@ const RetellaiAgent = () => {
     };
 
     initiateCall();
+
+    console.log("expanded", expanded);
+    console.log("muted", muted);
+
     if (expanded && muted) {
       setMuted(false);
     } else if (!expanded && !muted) {
@@ -486,6 +504,10 @@ const RetellaiAgent = () => {
     }
   }, [isRecording]);
 
+  const handleCountryCode = (data) => {
+    setCountryCode(data);
+  };
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {expanded ? (
@@ -511,6 +533,7 @@ const RetellaiAgent = () => {
                 onSubmit={handleSubmit}
                 error={error}
                 state={room.state}
+                handleCountryCode={handleCountryCode}
               />
             ) : (
               <div className="relative p-4 w-full ">
