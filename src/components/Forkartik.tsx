@@ -140,7 +140,6 @@ const VoiceAIWidget = () => {
 
         const handleClose = async () => {
           await session.leaveCall();
-          localStorage.clear();
 
           const response = await axios.post(
             `${baseurl}/api/end-call-session-ultravox/`,
@@ -151,7 +150,7 @@ const VoiceAIWidget = () => {
             }
           );
           hasClosed.current = false;
-
+          localStorage.clear();
           setTranscripts(null);
           toggleVoice(false);
         };
@@ -175,11 +174,14 @@ const VoiceAIWidget = () => {
 
   const handleMicClickForReconnect = async (id) => {
     try {
-      const response = await axios.post(`${baseurl}/api/start-thunder/`, {
-        agent_code: agent_id,
-        schema_name: schema,
-        prior_call_id: id,
-      });
+      const response = await axios.post(
+        `${baseurl}/api/start-danube-thunder/`,
+        {
+          agent_code: agent_id,
+          schema_name: schema,
+          prior_call_id: id,
+        }
+      );
 
       const wssUrl = response.data.joinUrl;
       const callId = response.data.callId;
@@ -222,10 +224,13 @@ const VoiceAIWidget = () => {
   const handleMicClick = async () => {
     try {
       if (status === "disconnected") {
-        const response = await axios.post(`${baseurl}/api/start-thunder/`, {
-          agent_code: agent_id,
-          schema_name: schema,
-        });
+        const response = await axios.post(
+          `${baseurl}/api/start-danube-thunder/`,
+          {
+            agent_code: agent_id,
+            schema_name: schema,
+          }
+        );
 
         const wssUrl = response.data.joinUrl;
         const callId = response.data.callId;
