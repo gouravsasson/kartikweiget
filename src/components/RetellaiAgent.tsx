@@ -5,7 +5,6 @@ import {
   RoomAudioRenderer,
   useConnectionState,
   useRoomContext,
-
 } from "@livekit/components-react";
 import { DataPacket_Kind, RemoteParticipant, RoomEvent } from "livekit-client";
 import axios from "axios";
@@ -36,24 +35,66 @@ const Header = ({ onMinimize, onClose }) => (
 // Mic Button with Pulse Effects
 const MicButton = ({ isRecording, isGlowing, onClick }) => {
   return (
-    <div className="relative">
-      {isGlowing && (
-        <>
-          <div className="absolute inset-0 -m-3 bg-yellow-400 opacity-30 rounded-full animate-ping" />
-          <div className="absolute inset-0 -m-6 bg-yellow-500 opacity-20 rounded-full animate-pulse" />
-          <div className="absolute inset-0 -m-12 bg-yellow-600 opacity-10 rounded-full animate-pulse" />
-        </>
-      )}
-      <button
-        onClick={onClick}
-        className={`relative z-10 bg-black rounded-full w-36 h-36 flex items-center justify-center border-2 ${
-          isGlowing
-            ? "border-yellow-300 shadow-yellow-400/60"
-            : "border-yellow-400"
-        }`}
-      >
-        <img src={logo} alt="logo" className="w-20 h-20" />
-      </button>
+    <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full">
+      {/* Background glow effects */}
+      <div className="absolute inset-0 bg-gradient-to-b from-yellow-500/10 to-transparent"></div>
+      <div className="absolute w-full h-64 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/10 rounded-full blur-3xl"></div>
+      <div className="absolute w-52 h-52  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full blur-xl animate-pulse"></div>
+      <div className="absolute w-40 h-40  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/25 rounded-full blur-md animate-pulse"></div>
+
+      {/* Decorative elements */}
+      {/* <div className="absolute w-full h-full">
+              <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping"></div>
+              <div className="absolute top-3/4 left-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-300"></div>
+              <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-700"></div>
+              <div className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-500"></div>
+              <div className="absolute top-1/2 left-1/5 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-200"></div>
+            </div> */}
+
+      {/* Microphone button with pulse animations */}
+      <div className="relative">
+        {isRecording && pulseEffects.small && (
+          <div className="absolute inset-0 -m-3 bg-yellow-400 opacity-30 rounded-full animate-ping"></div>
+        )}
+        {isRecording && pulseEffects.medium && (
+          <div className="absolute inset-0 -m-6 bg-yellow-500 opacity-20 rounded-full animate-pulse"></div>
+        )}
+        {isRecording && pulseEffects.large && (
+          <div className="absolute inset-0 -m-12 bg-yellow-600 opacity-10 rounded-full animate-pulse"></div>
+        )}
+        {isGlowing && (
+          <div className="absolute inset-0 -m-5 bg-yellow-400 opacity-50 rounded-full animate-ping"></div>
+        )}
+        {isGlowing && (
+          <div className="absolute inset-0 -m-10 bg-yellow-400 opacity-30 rounded-full animate-pulse"></div>
+        )}
+        <button
+          // onClick={handleMicClick}
+          className={`relative z-10 bg-black rounded-full w-36 h-36 flex items-center justify-center border-2 ${
+            isGlowing
+              ? "border-yellow-300 shadow-xl shadow-yellow-400/60"
+              : "border-yellow-400 shadow-lg"
+          } shadow-yellow-400/30 transition-all duration-500 ${
+            isRecording ? "scale-110" : "hover:scale-105"
+          } backdrop-blur-sm`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-yellow-900/20 rounded-full"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400/5 via-transparent to-transparent rounded-full"></div>
+          <div className="flex items-center justify-center">
+            <span
+              className={`text-yellow-400 font-bold text-6xl drop-shadow-xl tracking-tighter ${
+                isRecording ? "animate-pulse" : ""
+              }`}
+            >
+              <img src={logo} alt="logo" className="w-20 h-20" />
+            </span>
+          </div>
+        </button>
+      </div>
+
+      {/* <p className="text-yellow-400 text-sm mt-5 font-medium drop-shadow-md bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm border border-yellow-400/20">
+              {speech}
+            </p> */}
     </div>
   );
 };
@@ -135,11 +176,15 @@ const RetellaiAgent = () => {
   const [muted, setMuted] = useState(false);
   const [transcripts, setTranscripts] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+  const [pulseEffects, setPulseEffects] = useState({
+    small: false,
+    medium: false,
+    large: false,
+  });
 
   const handleFormShow = () => {
     return localStorage.getItem("formshow") === "true";
   };
-  console.log("function ", handleFormShow());
   const [showform, setShowform] = useState(handleFormShow);
 
   const refreshFormShow = () => {
@@ -203,35 +248,37 @@ const RetellaiAgent = () => {
       !isConnecting &&
       !priorCallId
     ) {
-      localStorage.setItem("formshow", "false");
-      setTimeout(() => {
-        setShowform(true);
-      }, 40000);
-      setIsConnecting(true);
-      try {
-        const res = await axios.post(
-          "https://danube.closerx.ai/api/create-greeting-web-call/",
-          {
-            schema_name: "Danubeproperty",
-            agent_code: 15,
-            quick_campaign_id: "quickcamp0c6c67bd",
-          }
-        );
-        const accessToken = res.data.response.access_token;
-        setToken(accessToken);
-        await room.connect(serverUrl, accessToken);
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-        const [audioTrack] = stream.getAudioTracks();
-        await room.localParticipant.publishTrack(audioTrack);
-        audioTrackRef.current = audioTrack;
-      } catch (err) {
-        console.error(err);
-        setError("Failed to connect. Try again.");
-      } finally {
-        setIsConnecting(false);
-      }
+      localStorage.setItem("formshow", "true");
+      refreshFormShow();
+      // localStorage.setItem("formshow", "false");
+      // setTimeout(() => {
+      //   setShowform(true);
+      // }, 40000);
+      // setIsConnecting(true);
+      // try {
+      //   const res = await axios.post(
+      //     "https://danube.closerx.ai/api/create-greeting-web-call/",
+      //     {
+      //       schema_name: "Danubeproperty",
+      //       agent_code: 15,
+      //       quick_campaign_id: "quickcamp0c6c67bd",
+      //     }
+      //   );
+      //   const accessToken = res.data.response.access_token;
+      //   setToken(accessToken);
+      //   await room.connect(serverUrl, accessToken);
+      //   const stream = await navigator.mediaDevices.getUserMedia({
+      //     audio: true,
+      //   });
+      //   const [audioTrack] = stream.getAudioTracks();
+      //   await room.localParticipant.publishTrack(audioTrack);
+      //   audioTrackRef.current = audioTrack;
+      // } catch (err) {
+      //   console.error(err);
+      //   setError("Failed to connect. Try again.");
+      // } finally {
+      //   setIsConnecting(false);
+      // }
     }
     if (muted) {
       setMuted(false);
@@ -267,7 +314,7 @@ const RetellaiAgent = () => {
             prior_call_ids: priorCallIdList,
           }
         : {
-            prior_call_ids: "",
+            prior_call_ids: [],
             schema_name: "Danubeproperty",
           };
     console.log("data", data);
@@ -331,6 +378,9 @@ const RetellaiAgent = () => {
     }
   };
   useEffect(() => {
+    localStorage.setItem("formshow", "false");
+    refreshFormShow();
+
     const priorCallIdList = JSON.parse(
       localStorage.getItem("priorCallIdList") || "[]"
     );
@@ -394,6 +444,28 @@ const RetellaiAgent = () => {
       container.scrollTop = container.scrollHeight;
     }
   }, [transcripts]);
+
+  useEffect(() => {
+    if (isRecording) {
+      const smallPulse = setInterval(() => {
+        setPulseEffects((prev) => ({ ...prev, small: !prev.small }));
+      }, 1000);
+
+      const mediumPulse = setInterval(() => {
+        setPulseEffects((prev) => ({ ...prev, medium: !prev.medium }));
+      }, 1500);
+
+      const largePulse = setInterval(() => {
+        setPulseEffects((prev) => ({ ...prev, large: !prev.large }));
+      }, 2000);
+
+      return () => {
+        clearInterval(smallPulse);
+        clearInterval(mediumPulse);
+        clearInterval(largePulse);
+      };
+    }
+  }, [isRecording]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
@@ -465,7 +537,7 @@ const RetellaiAgent = () => {
         </div>
       )}
 
-      <RoomAudioRenderer  />
+      <RoomAudioRenderer muted={muted} />
     </div>
   );
 };
