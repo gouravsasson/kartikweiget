@@ -172,8 +172,8 @@ const UserForm = ({
         className="w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
       >
         {state === "connecting"
-          ? "...Connecting to Agent"
-          : "Continue Conversation"}
+          ? "...Connecting to Ai Assistant"
+          : "Connect to Ai Assistant"}
       </button>
 
       {error && (
