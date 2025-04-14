@@ -6,7 +6,12 @@ import {
   useConnectionState,
   useRoomContext,
 } from "@livekit/components-react";
-import { DataPacket_Kind, RemoteParticipant, RoomEvent } from "livekit-client";
+import {
+  DataPacket_Kind,
+  RemoteParticipant,
+  RoomEvent,
+  ConnectionState,
+} from "livekit-client";
 import axios from "axios";
 
 // Header Component
@@ -100,7 +105,7 @@ const MicButton = ({ isRecording, isGlowing, onClick }) => {
 };
 
 // User Form Input
-const UserForm = ({ formData, setFormData, onSubmit, error }) => (
+const UserForm = ({ formData, setFormData, onSubmit, error, state }) => (
   <form onSubmit={onSubmit}>
     <div className="flex flex-col gap-4 m-4">
       {[
@@ -146,7 +151,9 @@ const UserForm = ({ formData, setFormData, onSubmit, error }) => (
         type="submit"
         className="w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
       >
-        Continue Conversation
+        {state === "connecting"
+          ? "...Connecting to Agent"
+          : "Continue Conversation"}
       </button>
 
       {error && (
@@ -181,6 +188,7 @@ const RetellaiAgent = () => {
     medium: false,
     large: false,
   });
+  console.log(room.state);
 
   const handleFormShow = () => {
     return localStorage.getItem("formshow") === "true";
@@ -491,6 +499,7 @@ const RetellaiAgent = () => {
                 setFormData={setFormData}
                 onSubmit={handleSubmit}
                 error={error}
+                state={room.state}
               />
             ) : (
               <div className="relative p-4 w-full ">
@@ -521,20 +530,28 @@ const RetellaiAgent = () => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-1 justify-center">
-          <button
-            onClick={toggleExpand}
-            className="bg-black rounded-full w-20 h-20 flex items-center justify-center shadow-2xl border-2 border-yellow-400 hover:scale-110"
-          >
-            <img src={logo} alt="logo" className="w-[54px] h-[54px]" />
-          </button>
-          <button
-            onClick={toggleExpand}
-            className="px-4 py-1 bg-black text-yellow-400 border-2 border-yellow-400 rounded-full text-sm font-bold"
-          >
-            TALK TO ME
-          </button>
-        </div>
+        <>
+          <div className="flex flex-col items-center gap-1 justify-center">
+            <button
+              onClick={toggleExpand}
+              className="bg-black rounded-full w-20 h-20 flex items-center justify-center shadow-2xl border-2 border-yellow-400 hover:bg-gray-900 transition-all hover:scale-110 hover:shadow-yellow-400/50"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 -m-1 bg-yellow-400/40 rounded-full animate-ping"></div>
+                <div className="absolute inset-0 -m-3 bg-yellow-400/20 rounded-full animate-pulse"></div>
+                <span className="text-yellow-400 font-bold text-3xl relative z-10 drop-shadow-xl tracking-tighter">
+                  <img src={logo} alt="logo" className="w-[54px] h-[54px]" />
+                </span>
+              </div>
+            </button>
+            <button
+              onClick={toggleExpand}
+              className="inline-block px-4 py-1 bg-black text-[#FFD700] border-2 border-[#FFD700] rounded-full font-inter font-bold text-sm no-underline text-center transition-all duration-300  hover:bg-black"
+            >
+              TALK TO ME
+            </button>
+          </div>
+        </>
       )}
 
       <RoomAudioRenderer muted={muted} />
