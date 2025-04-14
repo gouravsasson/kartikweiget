@@ -5,6 +5,7 @@ import {
   RoomAudioRenderer,
   useConnectionState,
   useRoomContext,
+
 } from "@livekit/components-react";
 import { DataPacket_Kind, RemoteParticipant, RoomEvent } from "livekit-client";
 import axios from "axios";
@@ -464,7 +465,7 @@ const RetellaiAgent = () => {
         </div>
       )}
 
-      <RoomAudioRenderer muted={muted} />
+      <RoomAudioRenderer  />
     </div>
   );
 };
