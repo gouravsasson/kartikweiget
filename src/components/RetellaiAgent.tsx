@@ -199,6 +199,7 @@ const RetellaiAgent = () => {
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [muted, setMuted] = useState(false);
+  console.log("muted", muted);
   const [transcripts, setTranscripts] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
   const [pulseEffects, setPulseEffects] = useState({
