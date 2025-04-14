@@ -5,12 +5,15 @@ import {
   RoomAudioRenderer,
   useConnectionState,
   useRoomContext,
+  useIsMuted,
+  useTracks,
+  TrackReference,
 } from "@livekit/components-react";
 import {
   DataPacket_Kind,
   RemoteParticipant,
   RoomEvent,
-  ConnectionState,
+  Track,
 } from "livekit-client";
 import axios from "axios";
 
@@ -172,15 +175,14 @@ const RetellaiAgent = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
   const [speech, setSpeech] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState("");
   const room = useRoomContext();
   const [token, setToken] = useState("");
   const status = useConnectionState(room);
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
-  const [priorCallId, setPriorCallId] = useState("");
   const [muted, setMuted] = useState(false);
+  console.log("muted", muted);
   const [transcripts, setTranscripts] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
   const [pulseEffects, setPulseEffects] = useState({
@@ -188,18 +190,15 @@ const RetellaiAgent = () => {
     medium: false,
     large: false,
   });
-  console.log(room.state);
 
   const handleFormShow = () => {
     return localStorage.getItem("formshow") === "true";
   };
-  const [showform, setShowform] = useState(handleFormShow);
+  const [showform, setShowform] = useState(handleFormShow());
 
   const refreshFormShow = () => {
     setShowform(handleFormShow());
   };
-
-  console.log("showform", showform);
 
   room.on(
     RoomEvent.DataReceived,
@@ -212,7 +211,6 @@ const RetellaiAgent = () => {
       let decodedData = decoder.decode(payload);
       let event = JSON.parse(decodedData);
       if (event.event_type === "update") {
-        // console.log("update", event.transcript[0].content);
         const alltrans = event.transcript;
 
         let Trans = "";
@@ -233,9 +231,10 @@ const RetellaiAgent = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        console.log("gg", document.visibilityState);
+        console.log("hidden");
         setMuted(true);
       } else if (document.visibilityState === "visible") {
+        console.log("visible");
         setMuted(false);
       }
     };
@@ -249,12 +248,15 @@ const RetellaiAgent = () => {
 
   // for first time
   const toggleExpand = async () => {
-    setExpanded(!expanded);
+    const priorCallIdList = JSON.parse(
+      localStorage.getItem("priorCallIdList") || "[]"
+    );
+    console.log("priorCallIdList", priorCallIdList);
+    setExpanded(true);
     if (
       !expanded &&
       status === "disconnected" &&
-      !isConnecting &&
-      !priorCallId
+      priorCallIdList.length === 0
     ) {
       localStorage.setItem("formshow", "true");
       refreshFormShow();
@@ -287,8 +289,7 @@ const RetellaiAgent = () => {
       // } finally {
       //   setIsConnecting(false);
       // }
-    }
-    if (muted) {
+    } else if (muted) {
       setMuted(false);
     }
   };
@@ -385,17 +386,22 @@ const RetellaiAgent = () => {
       setError("Unable to continue conversation.");
     }
   };
-  useEffect(() => {
-    localStorage.setItem("formshow", "false");
-    refreshFormShow();
+  const oneref = useRef(false);
 
+  useEffect(() => {
+    const formshow = localStorage.getItem("formshow") === "true";
+    if (formshow) {
+      refreshFormShow();
+    }
     const priorCallIdList = JSON.parse(
       localStorage.getItem("priorCallIdList") || "[]"
     );
+
     const initiateCall = async () => {
       console.log("initiateCall");
       try {
-        if (priorCallIdList.length > 0) {
+        if (priorCallIdList.length > 0 && !oneref.current) {
+          oneref.current = true;
           const res = await axios.post(
             "https://danube.closerx.ai/api/create-web-call/",
             {
@@ -424,7 +430,6 @@ const RetellaiAgent = () => {
           setToken(accessToken);
 
           await room.connect(serverUrl, accessToken);
-          setMuted(true);
 
           const stream = await navigator.mediaDevices.getUserMedia({
             audio: true,
@@ -438,7 +443,13 @@ const RetellaiAgent = () => {
         setError("Unable to continue conversation.");
       }
     };
+
     initiateCall();
+    if (expanded && muted) {
+      setMuted(false);
+    } else if (!expanded && !muted) {
+      setMuted(true);
+    }
   }, []);
 
   const handleMinimize = () => {
@@ -554,9 +565,7 @@ const RetellaiAgent = () => {
         </>
       )}
 
-      <RoomAudioRenderer
-      // muted={muted}
-      />
+      <RoomAudioRenderer muted={muted} />
     </div>
   );
 };
