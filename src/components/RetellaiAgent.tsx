@@ -150,6 +150,7 @@ const RetellaiAgent = () => {
   const room = useRoomContext();
   const [token, setToken] = useState("");
   const status = useConnectionState(room);
+  console.log("status", status);
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [muted, setMuted] = useState(false);
