@@ -240,7 +240,7 @@ export const countryCodes = [
   { code: "+263", name: "Zimbabwe" },
 ];
 
-const CountryCode = ({ data, defaultCode = "+1" }) => {
+const CountryCode = ({ data, defaultCode = "+971" }) => {
   const [countryCode, setCountryCode] = useState(defaultCode);
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

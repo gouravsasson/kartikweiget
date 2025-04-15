@@ -81,7 +81,7 @@ const UserForm = ({
         {
           icon: <Phone className="h-5 w-5 text-gray-400" />,
           value: formData.phone,
-          type: "tel",
+          type: "number",
           placeholder: "Phone number",
           key: "phone",
           component: <CountryCode data={handleCountryCode} />,
@@ -134,7 +134,7 @@ const UserForm = ({
 const RetellaiAgent = () => {
   const decoder = new TextDecoder();
   const containerRef = useRef(null);
-  const [countryCode, setCountryCode] = useState("+1");
+  const [countryCode, setCountryCode] = useState("+971");
   const [expanded, setExpanded] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
@@ -219,6 +219,7 @@ const RetellaiAgent = () => {
       status === "disconnected" &&
       priorCallIdList.length === 0
     ) {
+      handleCountryCode;
       localStorage.setItem("formshow", "true");
       refreshFormShow();
       // localStorage.setItem("formshow", "false");
