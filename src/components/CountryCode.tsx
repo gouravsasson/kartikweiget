@@ -278,14 +278,11 @@ const CountryCode = ({ data, defaultCode = "+1" }) => {
   };
 
   return (
-    <div
-      className="relative w-full max-w-sm text-black z-50 "
-      ref={dropdownRef}
-    >
+    <div className="relative max-w-sm text-black z-50 " ref={dropdownRef}>
       {/* Selected value */}
       <div
         onClick={() => setIsOpen((prev) => !prev)}
-        className=" text-black h-[40px] w-[130px]  cursor-pointer rounded-r-none bg-white backdrop-blur-sm border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-xl px-4 py-3  flex items-center justify-between"
+        className=" text-black h-[40px] w-[100px]  cursor-pointer rounded-r-none bg-white backdrop-blur-sm border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-xl px-4 py-3  flex items-center justify-between"
       >
         <span>{countryCode}</span>
         <ChevronsUpDown className="h-4 w-4  text-black" />
@@ -293,7 +290,7 @@ const CountryCode = ({ data, defaultCode = "+1" }) => {
 
       {/* Dropdown with search + options */}
       {isOpen && (
-        <div className="absolute z-50 bottom-0 w-full text-black bg-white border border-gray-200 rounded-xl shadow-lg max-h-72 overflow-auto">
+        <div className="absolute z-50 bottom-12 w-[180px] overflow-hidden  text-black bg-white border border-gray-200 rounded-xl shadow-lg max-h-72 ">
           {/* Search box inside dropdown */}
           <div className="p-2 sticky top-0 bg-white border-b border-gray-100 text-black">
             <input
