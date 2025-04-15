@@ -458,7 +458,12 @@ const RetellaiAgent = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div
+      className="fixed bottom-6 right-6 z-50 flex flex-col items-end"
+      style={{
+        zIndex: 999,
+      }}
+    >
       {expanded ? (
         <div
           className={`bg-gray-900/50 backdrop-blur-sm w-[309px] rounded-2xl shadow-2xl overflow-hidden border ${
