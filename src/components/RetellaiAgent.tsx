@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Mic, Send, X, Minimize2, Phone, Mail, User } from "lucide-react";
+import {
+  Mic,
+  Send,
+  X,
+  Minimize2,
+  Phone,
+  Mail,
+  User,
+  Loader2,
+} from "lucide-react";
 import logo from "../assets/logo.png";
 import {
   RoomAudioRenderer,
@@ -104,9 +113,14 @@ const UserForm = ({
         type="submit"
         className="w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
       >
-        {state === "connecting"
-          ? "...Connecting to Ai Assistant"
-          : "Connect to Ai Assistant"}
+        {state === "connecting" ? (
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-5 h-5 animate-spin" /> Connecting to AI
+            Assistant
+          </div>
+        ) : (
+          "Connect to AI Assistant"
+        )}
       </button>
 
       {error && (
