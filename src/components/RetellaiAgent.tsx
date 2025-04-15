@@ -291,10 +291,11 @@ const RetellaiAgent = () => {
       "https://danube.closerx.ai/api/end-web-call/",
       data
     );
+    setExpanded(false);
+
     if (endcall.status === 200) {
       stopRecording();
       setSpeech("");
-      setExpanded(false);
       localStorage.clear();
       room.disconnect();
     }
