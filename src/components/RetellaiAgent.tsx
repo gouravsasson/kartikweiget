@@ -109,7 +109,7 @@ const UserForm = ({
                 setFormData({ ...formData, [field.key]: value });
               }}
               className={`block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition ${
-                field.component && " rounded-l-none !pl-2"
+                field.component && " rounded-l-none !pl-2 h-[40px]"
               }`}
               placeholder={field.placeholder}
             />
