@@ -440,7 +440,7 @@ const VoiceAIWidget = () => {
           </div>
 
           {/* Microphone Button with enhanced visual effects */}
-          <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full">
+          <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full ">
             {/* Background glow effects */}
             <div className="absolute inset-0 bg-gradient-to-b from-yellow-500/10 to-transparent"></div>
             <div className="absolute w-full h-64 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/10 rounded-full blur-3xl"></div>

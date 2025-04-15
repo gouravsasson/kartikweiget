@@ -41,73 +41,6 @@ const Header = ({ onMinimize, onClose }) => (
   </div>
 );
 
-// Mic Button with Pulse Effects
-const MicButton = ({ isRecording, isGlowing, onClick }) => {
-  return (
-    <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full">
-      {/* Background glow effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-yellow-500/10 to-transparent"></div>
-      <div className="absolute w-full h-64 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/10 rounded-full blur-3xl"></div>
-      <div className="absolute w-52 h-52  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full blur-xl animate-pulse"></div>
-      <div className="absolute w-40 h-40  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/25 rounded-full blur-md animate-pulse"></div>
-
-      {/* Decorative elements */}
-      {/* <div className="absolute w-full h-full">
-              <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping"></div>
-              <div className="absolute top-3/4 left-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-300"></div>
-              <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-700"></div>
-              <div className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-500"></div>
-              <div className="absolute top-1/2 left-1/5 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-200"></div>
-            </div> */}
-
-      {/* Microphone button with pulse animations */}
-      <div className="relative">
-        {isRecording && pulseEffects.small && (
-          <div className="absolute inset-0 -m-3 bg-yellow-400 opacity-30 rounded-full animate-ping"></div>
-        )}
-        {isRecording && pulseEffects.medium && (
-          <div className="absolute inset-0 -m-6 bg-yellow-500 opacity-20 rounded-full animate-pulse"></div>
-        )}
-        {isRecording && pulseEffects.large && (
-          <div className="absolute inset-0 -m-12 bg-yellow-600 opacity-10 rounded-full animate-pulse"></div>
-        )}
-        {isGlowing && (
-          <div className="absolute inset-0 -m-5 bg-yellow-400 opacity-50 rounded-full animate-ping"></div>
-        )}
-        {isGlowing && (
-          <div className="absolute inset-0 -m-10 bg-yellow-400 opacity-30 rounded-full animate-pulse"></div>
-        )}
-        <button
-          // onClick={handleMicClick}
-          className={`relative z-10 bg-black rounded-full w-36 h-36 flex items-center justify-center border-2 ${
-            isGlowing
-              ? "border-yellow-300 shadow-xl shadow-yellow-400/60"
-              : "border-yellow-400 shadow-lg"
-          } shadow-yellow-400/30 transition-all duration-500 ${
-            isRecording ? "scale-110" : "hover:scale-105"
-          } backdrop-blur-sm`}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-yellow-900/20 rounded-full"></div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400/5 via-transparent to-transparent rounded-full"></div>
-          <div className="flex items-center justify-center">
-            <span
-              className={`text-yellow-400 font-bold text-6xl drop-shadow-xl tracking-tighter ${
-                isRecording ? "animate-pulse" : ""
-              }`}
-            >
-              <img src={logo} alt="logo" className="w-20 h-20" />
-            </span>
-          </div>
-        </button>
-      </div>
-
-      {/* <p className="text-yellow-400 text-sm mt-5 font-medium drop-shadow-md bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm border border-yellow-400/20">
-              {speech}
-            </p> */}
-    </div>
-  );
-};
-
 // User Form Input
 const UserForm = ({
   formData,
@@ -520,13 +453,108 @@ const RetellaiAgent = () => {
           } transition-all duration-500`}
         >
           <Header onMinimize={handleMinimize} onClose={handleClose} />
-          <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full">
-            <MicButton
-              isRecording={isRecording}
-              isGlowing={isGlowing}
-              onClick={handleMicClick}
-            />
-            <p className="text-yellow-400 text-sm mt-5 font-medium">{speech}</p>
+          <div className="pt-10 flex flex-col items-center justify-center relative h-full w-full">
+            <div className=" black/30 w-full h-full flex items-center justify-center ">
+              {/* Cosmic background effects */}
+
+              {/* Main content container */}
+              <div className="relative  flex flex-col items-center justify-center h-full w-full">
+                {/* Dynamic orbital rings */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                  {[...Array(3)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`absolute w-[${400 + i * 100}px] h-[${
+                        400 + i * 100
+                      }px] border border-yellow-400/20 rounded-full
+                animate-[spin_${10 + i * 5}s_linear_infinite] ${
+                        i % 2 === 0 ? "" : "animate-reverse"
+                      }`}
+                      style={{
+                        left: `${-200 - i * 50}px`,
+                        top: `${-200 - i * 50}px`,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Enhanced glow effects */}
+                <div className="absolute w-full h-64 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/10 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute w-52 h-52 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full blur-xl animate-[pulse_3s_ease-in-out_infinite]"></div>
+                <div className="absolute w-40 h-40 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/25 rounded-full blur-md animate-[pulse_2s_ease-in-out_infinite]"></div>
+
+                {/* Floating particles */}
+                <div className="">
+                  {[...Array(20)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-1 h-1 bg-yellow-400/40 rounded-full animate-float"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 5}s`,
+                        animationDuration: `${5 + Math.random() * 5}s`,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Microphone button with enhanced effects */}
+                <div className="relative group">
+                  <button
+                    onClick={handleMicClick}
+                    className={`relative z-10 bg-black/80 rounded-full w-36 h-36 flex items-center justify-center border-2
+              ${
+                isGlowing
+                  ? "border-yellow-300 shadow-[0_0_30px_10px_rgba(250,204,21,0.3)]"
+                  : "border-yellow-400 shadow-lg"
+              } transition-all duration-500 ${
+                      isRecording ? "scale-110" : "hover:scale-105"
+                    } backdrop-blur-sm
+              group-hover:shadow-[0_0_50px_15px_rgba(250,204,21,0.2)]`}
+                  >
+                    {/* Button internal gradients */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-yellow-900/20 rounded-full"></div>
+                    <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400/5 via-transparent to-transparent rounded-full"></div>
+
+                    {/* Microphone icon with animation */}
+                    <div className="relative">
+                      <img
+                        src={logo}
+                        alt=""
+                        className={`w-16 h-16 text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]
+                  ${
+                    isRecording
+                      ? "animate-[pulse_1.5s_ease-in-out_infinite]"
+                      : ""
+                  }
+                  transition-transform duration-300 group-hover:scale-110`}
+                      />
+
+                      {/* Ripple effect when recording */}
+                      {isRecording && (
+                        <div className="absolute -inset-4">
+                          <div className="absolute inset-0 border-2 border-yellow-400/50 rounded-full animate-[ripple_2s_ease-out_infinite]"></div>
+                          <div className="absolute inset-0 border-2 border-yellow-400/30 rounded-full animate-[ripple_2s_ease-out_infinite_0.5s]"></div>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                </div>
+
+                {/* Status indicator */}
+                {/* {isRecording && (
+                  <div className="mt-8 px-4 py-2 bg-black/30 rounded-full border border-yellow-400/20 backdrop-blur-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      <span className="text-yellow-400 text-sm font-medium">
+                        Recording...
+                      </span>
+                    </div>
+                  </div>
+                )} */}
+              </div>
+            </div>
             {showform ? (
               <UserForm
                 formData={formData}
