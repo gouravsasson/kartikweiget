@@ -83,7 +83,7 @@ const UserForm = ({
           value: formData.phone,
           type: "tel", // changed to tel
           maxLength: 13,
-          minLength: 10,
+          // minLength: 10,
           placeholder: "Phone number",
           key: "phone",
           component: <CountryCode data={handleCountryCode} />,
@@ -100,7 +100,6 @@ const UserForm = ({
               type={field.type}
               value={field.value}
               maxLength={field.maxLength}
-              minLength={field.minLength}
               onChange={(e) => {
                 let value = e.target.value;
                 if (field.key === "phone") {
