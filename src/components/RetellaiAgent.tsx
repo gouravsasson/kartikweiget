@@ -98,6 +98,7 @@ const UserForm = ({
             {field.component}
             <input
               type={field.type}
+              required
               value={field.value}
               maxLength={field.maxLength}
               onChange={(e) => {
@@ -296,11 +297,12 @@ const RetellaiAgent = () => {
             prior_call_ids: [],
             schema_name: "Danubeproperty",
           };
+    setExpanded(false);
+
     const endcall = await axios.post(
       "https://danube.closerx.ai/api/end-web-call/",
       data
     );
-    setExpanded(false);
 
     if (endcall.status === 200) {
       stopRecording();
@@ -346,14 +348,14 @@ const RetellaiAgent = () => {
 
       await room.connect(serverUrl, accessToken);
       setMuted(false);
+      localStorage.setItem("formshow", "false");
+      refreshFormShow();
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const [audioTrack] = stream.getAudioTracks();
       await room.localParticipant.publishTrack(audioTrack);
       audioTrackRef.current = audioTrack;
       setTranscripts("");
-      localStorage.setItem("formshow", "false");
-      refreshFormShow();
     } catch (err) {
       console.error("Form error:", err);
       setError("Unable to continue conversation.");
