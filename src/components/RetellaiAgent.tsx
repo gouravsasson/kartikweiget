@@ -81,7 +81,9 @@ const UserForm = ({
         {
           icon: <Phone className="h-5 w-5 text-gray-400" />,
           value: formData.phone,
-          type: "number",
+          type: "tel", // changed to tel
+          maxLength: 13,
+          minLength: 10,
           placeholder: "Phone number",
           key: "phone",
           component: <CountryCode data={handleCountryCode} />,
@@ -97,9 +99,15 @@ const UserForm = ({
             <input
               type={field.type}
               value={field.value}
-              onChange={(e) =>
-                setFormData({ ...formData, [field.key]: e.target.value })
-              }
+              maxLength={field.maxLength}
+              minLength={field.minLength}
+              onChange={(e) => {
+                let value = e.target.value;
+                if (field.key === "phone") {
+                  value = value.replace(/\D/g, ""); // remove non-digit characters
+                }
+                setFormData({ ...formData, [field.key]: value });
+              }}
               className={`block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition ${
                 field.component && " rounded-l-none !pl-2"
               }`}
