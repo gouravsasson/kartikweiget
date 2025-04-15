@@ -320,8 +320,8 @@ const RetellaiAgent = () => {
         "https://danube.closerx.ai/api/create-web-call/",
         {
           schema_name: "Danubeproperty",
-          agent_code: 14,
-          quick_campaign_id: "quickcamp33bfe31d",
+          agent_code: 16,
+          quick_campaign_id: "quickcamp65d4a8ec",
           phone: countryCode + formData.phone,
           name: formData.name,
           email: formData.email,
@@ -378,8 +378,8 @@ const RetellaiAgent = () => {
             "https://danube.closerx.ai/api/create-web-call/",
             {
               schema_name: "Danubeproperty",
-              agent_code: 14,
-              quick_campaign_id: "quickcamp33bfe31d",
+              agent_code: 16,
+              quick_campaign_id: "quickcamp65d4a8ec",
               prior_call_id: priorCallIdList[priorCallIdList.length - 1],
               // ...formData,
             }
