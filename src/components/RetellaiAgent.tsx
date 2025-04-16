@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import EventEmitter from "eventemitter3";
 import {
   Mic,
   Send,
@@ -173,6 +174,37 @@ const RetellaiAgent = () => {
     setShowform(handleFormShow());
   };
 
+  // room.on(
+  //   RoomEvent.DataReceived,
+  //   (
+  //     payload: Uint8Array,
+  //     participant?: RemoteParticipant,
+  //     kind?: DataPacket_Kind,
+  //     topic?: string
+  //   ) => {
+  //     let decodedData = decoder.decode(payload);
+  //     let event = JSON.parse(decodedData);
+  //     if (event.event_type === "update") {
+  //       const alltrans = event.transcript;
+
+  //       let Trans = "";
+
+  //       for (let index = 0; index < alltrans.length; index++) {
+  //         const currentTranscript = alltrans[index];
+
+  //         Trans = currentTranscript.content;
+
+  //         if (currentTranscript) {
+  //           setTranscripts(Trans);
+  //         }
+  //       }
+  //     }
+  //   }
+  // );
+
+  const transcriptEmitter = new EventEmitter();
+
+  // Original LiveKit Room event listener
   room.on(
     RoomEvent.DataReceived,
     (
@@ -181,26 +213,37 @@ const RetellaiAgent = () => {
       kind?: DataPacket_Kind,
       topic?: string
     ) => {
+      // Decode and parse the payload
       let decodedData = decoder.decode(payload);
       let event = JSON.parse(decodedData);
-      if (event.event_type === "update") {
-        const alltrans = event.transcript;
 
-        let Trans = "";
-
-        for (let index = 0; index < alltrans.length; index++) {
-          const currentTranscript = alltrans[index];
-
-          Trans = currentTranscript.content;
-
-          if (currentTranscript) {
-            setTranscripts(Trans);
-          }
-        }
-      }
+      // Emit a custom event with EventEmitter3
+      transcriptEmitter.emit("dataReceived", event, participant, kind, topic);
     }
   );
 
+  // Listen for the custom 'dataReceived' event with EventEmitter3
+  transcriptEmitter.on("dataReceived", (event, participant, kind, topic) => {
+    if (event.event_type === "update") {
+      const alltrans = event.transcript;
+      let Trans = "";
+
+      for (let index = 0; index < alltrans.length; index++) {
+        const currentTranscript = alltrans[index];
+        Trans = currentTranscript.content;
+
+        if (currentTranscript) {
+          setTranscripts(Trans); // Update state with the latest transcript
+        }
+      }
+    }
+  });
+
+  useEffect(() => {
+    return () => {
+      transcriptEmitter.removeAllListeners("dataReceived");
+    };
+  }, []);
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
