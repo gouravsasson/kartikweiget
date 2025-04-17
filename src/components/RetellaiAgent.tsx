@@ -262,6 +262,7 @@ const RetellaiAgent = () => {
 
   // for first time
   const toggleExpand = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const priorCallIdList = JSON.parse(
       localStorage.getItem("priorCallIdList") || "[]"
     );

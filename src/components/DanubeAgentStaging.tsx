@@ -165,6 +165,7 @@ const DanubeAgentStaging = () => {
     medium: false,
     large: false,
   });
+  const hasClosed = useRef(false);
 
   const handleFormShow = () => {
     return localStorage.getItem("formshow") === "true";
@@ -174,34 +175,6 @@ const DanubeAgentStaging = () => {
   const refreshFormShow = () => {
     setShowform(handleFormShow());
   };
-
-  // room.on(
-  //   RoomEvent.DataReceived,
-  //   (
-  //     payload: Uint8Array,
-  //     participant?: RemoteParticipant,
-  //     kind?: DataPacket_Kind,
-  //     topic?: string
-  //   ) => {
-  //     let decodedData = decoder.decode(payload);
-  //     let event = JSON.parse(decodedData);
-  //     if (event.event_type === "update") {
-  //       const alltrans = event.transcript;
-
-  //       let Trans = "";
-
-  //       for (let index = 0; index < alltrans.length; index++) {
-  //         const currentTranscript = alltrans[index];
-
-  //         Trans = currentTranscript.content;
-
-  //         if (currentTranscript) {
-  //           setTranscripts(Trans);
-  //         }
-  //       }
-  //     }
-  //   }
-  // );
 
   const transcriptEmitter = new EventEmitter();
 
@@ -267,8 +240,9 @@ const DanubeAgentStaging = () => {
   // disconnecting
   useEffect(() => {
     console.log("status", status);
+    console.log("hasClosed", hasClosed.current);
 
-    if (status === "disconnected") {
+    if (status === "disconnected" && !hasClosed.current) {
       console.log("auto disconnect");
 
       // Only run cleanup if this isn't a page refresh
@@ -302,6 +276,7 @@ const DanubeAgentStaging = () => {
             if (endcall.status === 200) {
               stopRecording();
               setSpeech("");
+              hasClosed.current = false;
               localStorage.clear();
               room.disconnect();
             }
@@ -402,32 +377,36 @@ const DanubeAgentStaging = () => {
   };
 
   const handleClose = async () => {
-    const priorCallIdList = JSON.parse(
-      localStorage.getItem("priorCallIdList") || "[]"
-    );
+    if (status !== "disconnected") {
+      hasClosed.current = true;
+      const priorCallIdList = JSON.parse(
+        localStorage.getItem("priorCallIdList") || "[]"
+      );
 
-    const data =
-      priorCallIdList.length > 0
-        ? {
-            schema_name: "Danubeproperty",
-            prior_call_ids: priorCallIdList,
-          }
-        : {
-            prior_call_ids: [],
-            schema_name: "Danubeproperty",
-          };
-    setExpanded(false);
+      const data =
+        priorCallIdList.length > 0
+          ? {
+              schema_name: "Danubeproperty",
+              prior_call_ids: priorCallIdList,
+            }
+          : {
+              prior_call_ids: [],
+              schema_name: "Danubeproperty",
+            };
+      setExpanded(false);
 
-    const endcall = await axios.post(
-      "https://danube.closerx.ai/api/ravan-ai-end/",
-      data
-    );
+      const endcall = await axios.post(
+        "https://danube.closerx.ai/api/ravan-ai-end/",
+        data
+      );
 
-    if (endcall.status === 200) {
-      stopRecording();
-      setSpeech("");
-      localStorage.clear();
-      room.disconnect();
+      if (endcall.status === 200) {
+        stopRecording();
+        setSpeech("");
+        hasClosed.current = false;
+        localStorage.clear();
+        room.disconnect();
+      }
     }
   };
 
