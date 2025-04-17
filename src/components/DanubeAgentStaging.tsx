@@ -59,6 +59,7 @@ const UserForm = ({
   error,
   state,
   handleCountryCode,
+  startstatus,
 }) => (
   <form onSubmit={onSubmit}>
     <div className="flex flex-col gap-4 m-4">
@@ -294,7 +295,7 @@ const DanubeAgentStaging = () => {
         const handleEndCall = async () => {
           try {
             const endcall = await axios.post(
-              "https://danube.closerx.ai/api/end-web-call/",
+              "https://danube.closerx.ai/api/ravan-ai-end/",
               data
             );
 
@@ -418,7 +419,7 @@ const DanubeAgentStaging = () => {
     setExpanded(false);
 
     const endcall = await axios.post(
-      "https://danube.closerx.ai/api/end-web-call/",
+      "https://danube.closerx.ai/api/ravan-ai-end/",
       data
     );
 
@@ -454,15 +455,10 @@ const DanubeAgentStaging = () => {
 
       if (result.state === "denied") {
         console.warn("Microphone permission permanently denied.");
-        try {
-          await navigator.mediaDevices.getUserMedia({ audio: true });
-          console.log("Microphone access granted.");
-          return true;
-        } catch (err) {
-          console.warn("User denied microphone access.");
-          alert("Microphone access is required. Please allow it.");
-          return false;
-        }
+        alert(
+          "Microphone access is blocked. Please enable it manually in your browser settings."
+        );
+        return false;
       }
     } catch (error) {
       console.error("Permission check failed:", error);
@@ -478,7 +474,7 @@ const DanubeAgentStaging = () => {
 
     try {
       const res = await axios.post(
-        "https://danube.closerx.ai/api/create-web-call/",
+        "https://danube.closerx.ai/api/ravan-ai-start/",
         {
           schema_name: "Danubeproperty",
           agent_code: 17,
@@ -536,7 +532,7 @@ const DanubeAgentStaging = () => {
         if (priorCallIdList.length > 0 && !oneref.current) {
           oneref.current = true;
           const res = await axios.post(
-            "https://danube.closerx.ai/api/ravan-create-web-call/",
+            "https://danube.closerx.ai/api/ravan-ai-start/",
             {
               schema_name: "Danubeproperty",
               agent_code: 17,
