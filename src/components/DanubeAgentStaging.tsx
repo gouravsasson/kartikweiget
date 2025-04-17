@@ -430,10 +430,46 @@ const DanubeAgentStaging = () => {
     }
   };
 
+  async function ensureMicrophonePermission() {
+    try {
+      const result = await navigator.permissions.query({ name: "microphone" });
+
+      if (result.state === "granted") {
+        console.log("Microphone permission already granted.");
+        return true;
+      }
+
+      if (result.state === "prompt") {
+        console.log("Requesting microphone access...");
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log("Microphone access granted.");
+          return true;
+        } catch (err) {
+          console.warn("User denied microphone access.");
+          alert("Microphone access is required. Please allow it.");
+          return false;
+        }
+      }
+
+      if (result.state === "denied") {
+        console.warn("Microphone permission permanently denied.");
+        alert(
+          "Microphone access is blocked. Please enable it manually in your browser settings."
+        );
+        return false;
+      }
+    } catch (error) {
+      console.error("Permission check failed:", error);
+      alert("Error checking microphone permission.");
+      return false;
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await room.disconnect();
+    ensureMicrophonePermission();
 
     try {
       const res = await axios.post(
@@ -495,7 +531,7 @@ const DanubeAgentStaging = () => {
         if (priorCallIdList.length > 0 && !oneref.current) {
           oneref.current = true;
           const res = await axios.post(
-            "https://danube.closerx.ai/api/create-web-call/",
+            "https://danube.closerx.ai/api/ravan-create-web-call/",
             {
               schema_name: "Danubeproperty",
               agent_code: 17,
