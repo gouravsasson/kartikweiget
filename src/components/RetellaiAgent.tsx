@@ -513,7 +513,7 @@ const RetellaiAgent = () => {
 
   return (
     <div
-      className="fixed bottom-16 right-6 z-50 flex flex-col items-end"
+      className="fixed bottom-[74px] right-6 z-50 flex flex-col items-end"
       style={{
         zIndex: 999,
       }}
