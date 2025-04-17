@@ -513,7 +513,7 @@ const RetellaiAgent = () => {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 flex flex-col items-end"
+      className="fixed bottom-16 right-6 z-50 flex flex-col items-end"
       style={{
         zIndex: 999,
       }}
@@ -683,7 +683,7 @@ const RetellaiAgent = () => {
             </button>
             <button
               onClick={toggleExpand}
-              className="inline-block px-4 py-1 bg-black text-[#FFD700] border-2 border-[#FFD700] rounded-full font-inter font-bold text-sm no-underline text-center transition-all duration-300  hover:bg-black"
+              className="inline-block px-4 py-1 bg-black text-[#FFD700] border-2 border-[#FFD700] rounded-full font-inter font-bold text-xs no-underline text-center transition-all duration-300  hover:bg-black"
             >
               TALK TO ME
             </button>

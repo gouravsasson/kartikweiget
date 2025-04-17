@@ -11,7 +11,7 @@ function App() {
 
   const { type } = useWidgetContext();
   // console.log("type", type);
-  // const [type, setType] = useState("retell");
+  // const [type, setType] = useState("ravan");
 
   return (
     <>
