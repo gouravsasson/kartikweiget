@@ -262,7 +262,6 @@ const RetellaiAgent = () => {
 
   // for first time
   const toggleExpand = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const priorCallIdList = JSON.parse(
       localStorage.getItem("priorCallIdList") || "[]"
     );
@@ -358,8 +357,7 @@ const RetellaiAgent = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    await room.disconnect();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     try {
       const res = await axios.post(
