@@ -343,7 +343,7 @@ const RetellaiAgent = () => {
     setExpanded(false);
 
     const endcall = await axios.post(
-      "https://danube.closerx.ai/api/end-web-call/",
+      "https://danube.closerx.ai/api/ravan-ai-end/",
       data
     );
 
@@ -362,7 +362,7 @@ const RetellaiAgent = () => {
 
     try {
       const res = await axios.post(
-        "https://danube.closerx.ai/api/create-web-call/",
+        "https://danube.closerx.ai/api/ravan-ai-start/",
         {
           schema_name: "Danubeproperty",
           agent_code: 16,
@@ -420,7 +420,7 @@ const RetellaiAgent = () => {
         if (priorCallIdList.length > 0 && !oneref.current) {
           oneref.current = true;
           const res = await axios.post(
-            "https://danube.closerx.ai/api/create-web-call/",
+            "https://danube.closerx.ai/api/ravan-ai-start/",
             {
               schema_name: "Danubeproperty",
               agent_code: 16,
