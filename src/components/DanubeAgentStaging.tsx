@@ -240,6 +240,81 @@ const DanubeAgentStaging = () => {
   });
 
   useEffect(() => {
+    // Set flag when page is about to refresh
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem("isRefreshing", "true");
+    };
+
+    // Clear flag when page loads (this will execute after refresh)
+    const clearRefreshFlag = () => {
+      sessionStorage.removeItem("isRefreshing");
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("load", clearRefreshFlag);
+
+    // Initial cleanup of any leftover flag
+    clearRefreshFlag();
+
+    // Cleanup listeners
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("load", clearRefreshFlag);
+    };
+  }, []);
+
+  // disconnecting
+  useEffect(() => {
+    console.log("status", status);
+
+    if (status === "disconnected") {
+      console.log("auto disconnect");
+
+      // Only run cleanup if this isn't a page refresh
+      const isPageRefresh = sessionStorage.getItem("isRefreshing") === "true";
+
+      if (!isPageRefresh) {
+        const priorCallIdList = JSON.parse(
+          localStorage.getItem("priorCallIdList") || "[]"
+        );
+
+        const data =
+          priorCallIdList.length > 0
+            ? {
+                schema_name: "Danubeproperty",
+                prior_call_ids: priorCallIdList,
+              }
+            : {
+                prior_call_ids: [],
+                schema_name: "Danubeproperty",
+              };
+
+        setExpanded(false);
+
+        const handleEndCall = async () => {
+          try {
+            const endcall = await axios.post(
+              "https://danube.closerx.ai/api/end-web-call/",
+              data
+            );
+
+            if (endcall.status === 200) {
+              stopRecording();
+              setSpeech("");
+              localStorage.clear();
+              room.disconnect();
+            }
+          } catch (error) {
+            console.error("Error ending call:", error);
+          }
+        };
+
+        handleEndCall();
+      }
+    }
+  }, [status]);
+
+  useEffect(() => {
     return () => {
       transcriptEmitter.removeAllListeners("dataReceived");
     };
