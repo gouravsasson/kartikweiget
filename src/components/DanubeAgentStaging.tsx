@@ -454,10 +454,15 @@ const DanubeAgentStaging = () => {
 
       if (result.state === "denied") {
         console.warn("Microphone permission permanently denied.");
-        alert(
-          "Microphone access is blocked. Please enable it manually in your browser settings."
-        );
-        return false;
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log("Microphone access granted.");
+          return true;
+        } catch (err) {
+          console.warn("User denied microphone access.");
+          alert("Microphone access is required. Please allow it.");
+          return false;
+        }
       }
     } catch (error) {
       console.error("Permission check failed:", error);
