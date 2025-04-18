@@ -6,6 +6,7 @@ import { Room } from "livekit-client";
 import Retelltest from "./components/Retelltest";
 import { useState } from "react";
 import DanubeAgentStaging from "./components/DanubeAgentStaging";
+import { Analytics } from "@vercel/analytics/react";
 function App() {
   const [room] = useState(() => new Room({}));
 
@@ -25,6 +26,7 @@ function App() {
         {/* retell agent made on retell */}
         {type === "retell" && <Retelltest />}
       </LiveKitRoom>
+      <Analytics />
     </>
   );
 }
