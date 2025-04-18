@@ -27,6 +27,9 @@ import {
 } from "livekit-client";
 import axios from "axios";
 import CountryCode from "./CountryCode";
+import startsWith from "lodash.startswith";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 // Header Component
 const Header = ({ onMinimize, onClose }) => (
@@ -60,85 +63,97 @@ const UserForm = ({
   state,
   handleCountryCode,
   startstatus,
-}) => (
-  <form onSubmit={onSubmit}>
-    <div className="flex flex-col gap-4 m-4">
-      {[
-        {
-          icon: <User className="h-5 w-5 text-gray-400" />,
-          value: formData.name,
-          type: "text",
-          placeholder: "Your name",
-          key: "name",
-          component: "",
-        },
-        {
-          icon: <Mail className="h-5 w-5 text-gray-400" />,
-          value: formData.email,
-          type: "email",
-          placeholder: "Email address",
-          key: "email",
-          component: "",
-        },
-        {
-          icon: <Phone className="h-5 w-5 text-gray-400" />,
-          value: formData.phone,
-          type: "tel", // changed to tel
-          maxLength: 13,
-          // minLength: 10,
-          placeholder: "Phone number",
-          key: "phone",
-          component: <CountryCode data={handleCountryCode} />,
-        },
-      ].map((field, index) => (
-        <div className="relative" key={index}>
-          <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
-            {field.icon}
-          </div>
+}) => {
+  const [phoneError, setPhoneError] = useState("");
+  return (
+    <form onSubmit={onSubmit}>
+      <div className="flex flex-col gap-4 m-4">
+        {[
+          {
+            icon: <User className="h-5 w-5 text-gray-400" />,
+            value: formData.name,
+            type: "text",
+            placeholder: "Your name",
+            key: "name",
+            component: "",
+          },
+          {
+            icon: <Mail className="h-5 w-5 text-gray-400" />,
+            value: formData.email,
+            type: "email",
+            placeholder: "Email address",
+            key: "email",
+            component: "",
+          },
+        ].map((field, index) => (
+          <div className="relative" key={index}>
+            <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
+              {field.icon}
+            </div>
 
-          <div className="flex items-center">
-            {field.component}
-            <input
-              type={field.type}
-              required
-              value={field.value}
-              maxLength={field.maxLength}
-              onChange={(e) => {
-                let value = e.target.value;
-                if (field.key === "phone") {
-                  value = value.replace(/\D/g, ""); // remove non-digit characters
-                }
-                setFormData({ ...formData, [field.key]: value });
-              }}
-              className={`block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition ${
-                field.component && " rounded-l-none !pl-2 h-[40px]"
-              }`}
-              placeholder={field.placeholder}
-            />
+            <div className="flex items-center">
+              {field.component}
+              <input
+                type={field.type}
+                required
+                value={field.value}
+                maxLength={field.maxLength}
+                onChange={(e) => {
+                  let value = e.target.value;
+                  if (field.key === "phone") {
+                    value = value.replace(/\D/g, ""); // remove non-digit characters
+                  }
+                  setFormData({ ...formData, [field.key]: value });
+                }}
+                className={`block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition ${
+                  field.component && " rounded-l-none !pl-2 h-[40px]"
+                }`}
+                placeholder={field.placeholder}
+              />
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+        <PhoneInput
+          dropdownClass="bottom-10 z-50"
+          dropdownStyle={{ zIndex: 1000 }}
+          inputProps={{
+            name: "phone",
+            required: true,
+          }}
+          country={"us"}
+          value={formData.phone}
+          onChange={(phone) => {
+            setFormData({ ...formData, phone });
+            setPhoneError(""); // clear error as user types
+          }}
+          enableSearch={true}
+        />
 
-      <button
-        type="submit"
-        className="w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
-      >
-        {state === "connecting" ? (
-          <div className="flex items-center justify-center">
-            <Loader2 className="w-5 h-5 animate-spin" /> Connecting to AI
-            Assistant
-          </div>
-        ) : (
-          "Connect to AI Assistant"
+        {phoneError && (
+          <div className="text-red-500 text-sm mt-1">{phoneError}</div>
         )}
-      </button>
 
-      {error && (
-        <div className="text-red-500 text-center text-sm mt-2">{error}</div>
-      )}
-    </div>
-  </form>
-);
+        <button
+          type="submit"
+          className="w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
+        >
+          {state === "connecting" ? (
+            <div className="flex items-center justify-center">
+              <Loader2 className="w-5 h-5 animate-spin" /> Connecting to AI
+              Assistant
+            </div>
+          ) : (
+            "Connect to AI Assistant"
+          )}
+        </button>
+
+        {error && (
+          <div className="text-red-500 text-center text-sm mt-2">{error}</div>
+        )}
+      </div>
+    </form>
+  );
+};
 
 // Main Component
 const DanubeAgentStaging = () => {
@@ -165,6 +180,8 @@ const DanubeAgentStaging = () => {
     medium: false,
     large: false,
   });
+  const [phoneError, setPhoneError] = useState("");
+
   const hasClosed = useRef(false);
 
   const handleFormShow = () => {
@@ -448,6 +465,13 @@ const DanubeAgentStaging = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const cleanedPhone = formData.phone.replace(/\D/g, "");
+    if (cleanedPhone.length < 10) {
+      setError("Please enter a valid phone number");
+      return; // 🔥 Do not submit if phone is invalid
+    }
+
+    setPhoneError("");
 
     ensureMicrophonePermission();
 
@@ -604,7 +628,7 @@ const DanubeAgentStaging = () => {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 flex flex-col items-end"
+      className="fixed bottom-6 right-6  flex flex-col items-end"
       style={{
         zIndex: 999,
       }}
@@ -649,7 +673,7 @@ const DanubeAgentStaging = () => {
                 <div className="absolute w-40 h-40 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/25 rounded-full blur-md animate-[pulse_2s_ease-in-out_infinite]"></div>
 
                 {/* Floating particles */}
-                <div className="">
+                {/* <div className="">
                   {[...Array(20)].map((_, i) => (
                     <div
                       key={i}
@@ -662,13 +686,13 @@ const DanubeAgentStaging = () => {
                       }}
                     />
                   ))}
-                </div>
+                </div> */}
 
                 {/* Microphone button with enhanced effects */}
                 <div className="relative group">
                   <button
                     onClick={handleMicClick}
-                    className={`relative z-10 bg-black/80 rounded-full w-36 h-36 flex items-center justify-center border-2
+                    className={`relative  bg-black/80 rounded-full w-36 h-36 flex items-center justify-center border-2
               ${
                 isGlowing
                   ? "border-yellow-300 shadow-[0_0_30px_10px_rgba(250,204,21,0.3)]"
