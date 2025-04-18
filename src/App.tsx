@@ -4,15 +4,28 @@ import { LiveKitRoom } from "@livekit/components-react";
 import Forkartik from "./components/Forkartik";
 import { Room } from "livekit-client";
 import Retelltest from "./components/Retelltest";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DanubeAgentStaging from "./components/DanubeAgentStaging";
 import { Analytics } from "@vercel/analytics/react";
+import axios from "axios";
 function App() {
+  useEffect(() => {
+    const localCountryCode = localStorage.getItem("countryCode");
+    if (!localCountryCode) {
+      const fetchIp = async () => {
+        const res = await axios.get("https://ipapi.co/json/");
+        localStorage.setItem("countryCode", res.data.country_calling_code);
+        localStorage.setItem("countryName", res.data.country_name);
+        localStorage.setItem("continentcode", res.data.country);
+      };
+      fetchIp();
+    }
+  }, []);
   const [room] = useState(() => new Room({}));
 
   const { type } = useWidgetContext();
-  console.log("type", type);
-  // const [type, setType] = useState("ravan");
+  // console.log("type", type);
+  // const [type, setType] = useState("danubestaging");
 
   return (
     <>

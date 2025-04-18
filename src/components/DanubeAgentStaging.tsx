@@ -65,6 +65,9 @@ const UserForm = ({
   startstatus,
 }) => {
   const [phoneError, setPhoneError] = useState("");
+  const continentcode = localStorage.getItem("continentcode");
+  console.log("continentcode", continentcode);
+
   return (
     <form onSubmit={onSubmit}>
       <div className="flex flex-col gap-4 m-4">
@@ -120,7 +123,7 @@ const UserForm = ({
             name: "phone",
             required: true,
           }}
-          country={"us"}
+          country={`${continentcode?.toLowerCase()}`}
           value={formData.phone}
           onChange={(phone) => {
             setFormData({ ...formData, phone });
@@ -255,57 +258,57 @@ const DanubeAgentStaging = () => {
   }, []);
 
   // disconnecting
-  useEffect(() => {
-    console.log("status", status);
-    console.log("hasClosed", hasClosed.current);
+  // useEffect(() => {
+  //   console.log("status", status);
+  //   console.log("hasClosed", hasClosed.current);
 
-    if (status === "disconnected" && !hasClosed.current) {
-      console.log("auto disconnect");
+  //   if (status === "disconnected" && !hasClosed.current) {
+  //     console.log("auto disconnect");
 
-      // Only run cleanup if this isn't a page refresh
-      const isPageRefresh = sessionStorage.getItem("isRefreshing") === "true";
+  //     // Only run cleanup if this isn't a page refresh
+  //     const isPageRefresh = sessionStorage.getItem("isRefreshing") === "true";
 
-      if (!isPageRefresh) {
-        const priorCallIdList = JSON.parse(
-          localStorage.getItem("priorCallIdList") || "[]"
-        );
+  //     if (!isPageRefresh) {
+  //       const priorCallIdList = JSON.parse(
+  //         localStorage.getItem("priorCallIdList") || "[]"
+  //       );
 
-        const data =
-          priorCallIdList.length > 0
-            ? {
-                schema_name: "Danubeproperty",
-                prior_call_ids: priorCallIdList,
-              }
-            : {
-                prior_call_ids: [],
-                schema_name: "Danubeproperty",
-              };
+  //       const data =
+  //         priorCallIdList.length > 0
+  //           ? {
+  //               schema_name: "Danubeproperty",
+  //               prior_call_ids: priorCallIdList,
+  //             }
+  //           : {
+  //               prior_call_ids: [],
+  //               schema_name: "Danubeproperty",
+  //             };
 
-        setExpanded(false);
+  //       setExpanded(false);
 
-        const handleEndCall = async () => {
-          try {
-            const endcall = await axios.post(
-              "https://danube.closerx.ai/api/ravan-ai-end/",
-              data
-            );
+  //       const handleEndCall = async () => {
+  //         try {
+  //           const endcall = await axios.post(
+  //             "https://danube.closerx.ai/api/ravan-ai-end/",
+  //             data
+  //           );
 
-            if (endcall.status === 200) {
-              stopRecording();
-              setSpeech("");
-              hasClosed.current = false;
-              localStorage.clear();
-              room.disconnect();
-            }
-          } catch (error) {
-            console.error("Error ending call:", error);
-          }
-        };
+  //           if (endcall.status === 200) {
+  //             stopRecording();
+  //             setSpeech("");
+  //             hasClosed.current = false;
+  //             localStorage.clear();
+  //             room.disconnect();
+  //           }
+  //         } catch (error) {
+  //           console.error("Error ending call:", error);
+  //         }
+  //       };
 
-        handleEndCall();
-      }
-    }
-  }, [status]);
+  //       handleEndCall();
+  //     }
+  //   }
+  // }, [status]);
 
   useEffect(() => {
     return () => {
@@ -394,36 +397,38 @@ const DanubeAgentStaging = () => {
   };
 
   const handleClose = async () => {
+    setExpanded(false);
+
     if (status !== "disconnected") {
-      hasClosed.current = true;
-      const priorCallIdList = JSON.parse(
-        localStorage.getItem("priorCallIdList") || "[]"
-      );
+      // hasClosed.current = true;
+      // const priorCallIdList = JSON.parse(
+      //   localStorage.getItem("priorCallIdList") || "[]"
+      // );
 
-      const data =
-        priorCallIdList.length > 0
-          ? {
-              schema_name: "Danubeproperty",
-              prior_call_ids: priorCallIdList,
-            }
-          : {
-              prior_call_ids: [],
-              schema_name: "Danubeproperty",
-            };
-      setExpanded(false);
+      // const data =
+      //   priorCallIdList.length > 0
+      //     ? {
+      //         schema_name: "Danubeproperty",
+      //         prior_call_ids: priorCallIdList,
+      //       }
+      //     : {
+      //         prior_call_ids: [],
+      //         schema_name: "Danubeproperty",
+      //       };
 
-      const endcall = await axios.post(
-        "https://danube.closerx.ai/api/ravan-ai-end/",
-        data
-      );
+      // const endcall = await axios.post(
+      //   "https://danube.closerx.ai/api/ravan-ai-end/",
+      //   data
+      // );
 
-      if (endcall.status === 200) {
-        stopRecording();
-        setSpeech("");
-        hasClosed.current = false;
-        localStorage.clear();
-        room.disconnect();
-      }
+      // if (endcall.status === 200) {
+      //   stopRecording();
+      //   setSpeech("");
+      //   hasClosed.current = false;
+
+      localStorage.clear();
+      room.disconnect();
+      // }
     }
   };
 
