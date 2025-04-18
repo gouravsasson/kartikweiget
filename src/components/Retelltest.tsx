@@ -9,7 +9,7 @@ function Retelltest() {
   const start = async () => {
     try {
       const res = await axios.post(
-        "https://danube.closerx.ai/api/create-web-call/",
+        "https://danube.closerx.ai/api/ravan-ai-start/",
         {
           schema_name: "Danubeproperty",
           agent_code: 17,
@@ -17,6 +17,7 @@ function Retelltest() {
           phone: 99911293960,
           name: "Ravan",
           email: "ravan@gmail.com",
+          country: "India",
         }
       );
 
@@ -48,10 +49,30 @@ function Retelltest() {
   });
   return (
     <div>
-      <button onClick={() => start()}>Start</button>
-      <button onClick={() => stop()}>Stop</button>
-      <button onClick={() => pause()}>mute</button>
-      <button onClick={() => resume()}>unmute</button>
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+        onClick={() => start()}
+      >
+        Start
+      </button>
+      <button
+        className="bg-red-500 text-white px-4 py-2 rounded-md"
+        onClick={() => stop()}
+      >
+        Stop
+      </button>
+      <button
+        className="bg-yellow-500 text-white px-4 py-2 rounded-md"
+        onClick={() => pause()}
+      >
+        mute
+      </button>
+      <button
+        className="bg-green-500 text-white px-4 py-2 rounded-md"
+        onClick={() => resume()}
+      >
+        unmute
+      </button>
     </div>
   );
 }

@@ -18,6 +18,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.8.4",
     "eventemitter3": "^5.0.1",
+    "intl-tel-input": "^25.3.1",
     "livekit-client": "^2.11.2",
     "lucide-react": "^0.474.0",
     "path-browserify": "^1.0.1",
