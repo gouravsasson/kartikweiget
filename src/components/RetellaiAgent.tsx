@@ -174,34 +174,6 @@ const RetellaiAgent = () => {
     setShowform(handleFormShow());
   };
 
-  // room.on(
-  //   RoomEvent.DataReceived,
-  //   (
-  //     payload: Uint8Array,
-  //     participant?: RemoteParticipant,
-  //     kind?: DataPacket_Kind,
-  //     topic?: string
-  //   ) => {
-  //     let decodedData = decoder.decode(payload);
-  //     let event = JSON.parse(decodedData);
-  //     if (event.event_type === "update") {
-  //       const alltrans = event.transcript;
-
-  //       let Trans = "";
-
-  //       for (let index = 0; index < alltrans.length; index++) {
-  //         const currentTranscript = alltrans[index];
-
-  //         Trans = currentTranscript.content;
-
-  //         if (currentTranscript) {
-  //           setTranscripts(Trans);
-  //         }
-  //       }
-  //     }
-  //   }
-  // );
-
   const transcriptEmitter = new EventEmitter();
 
   // Original LiveKit Room event listener
@@ -274,35 +246,6 @@ const RetellaiAgent = () => {
       handleCountryCode;
       localStorage.setItem("formshow", "true");
       refreshFormShow();
-      // localStorage.setItem("formshow", "false");
-      // setTimeout(() => {
-      //   setShowform(true);
-      // }, 40000);
-      // setIsConnecting(true);
-      // try {
-      //   const res = await axios.post(
-      //     "https://danube.closerx.ai/api/create-greeting-web-call/",
-      //     {
-      //       schema_name: "Danubeproperty",
-      //       agent_code: 15,
-      //       quick_campaign_id: "quickcamp0c6c67bd",
-      //     }
-      //   );
-      //   const accessToken = res.data.response.access_token;
-      //   setToken(accessToken);
-      //   await room.connect(serverUrl, accessToken);
-      //   const stream = await navigator.mediaDevices.getUserMedia({
-      //     audio: true,
-      //   });
-      //   const [audioTrack] = stream.getAudioTracks();
-      //   await room.localParticipant.publishTrack(audioTrack);
-      //   audioTrackRef.current = audioTrack;
-      // } catch (err) {
-      //   console.error(err);
-      //   setError("Failed to connect. Try again.");
-      // } finally {
-      //   setIsConnecting(false);
-      // }
     } else if (muted) {
       setMuted(false);
     }
@@ -357,7 +300,7 @@ const RetellaiAgent = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const localCountryName = localStorage.getItem("countryName");
 
     try {
       const res = await axios.post(
@@ -369,6 +312,7 @@ const RetellaiAgent = () => {
           phone: countryCode + formData.phone,
           name: formData.name,
           email: formData.email,
+          country: localCountryName,
         }
       );
 
@@ -507,6 +451,7 @@ const RetellaiAgent = () => {
   }, [isRecording]);
 
   const handleCountryCode = (data) => {
+    console.log("data", data);
     setCountryCode(data);
   };
 

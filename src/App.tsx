@@ -9,9 +9,9 @@ import DanubeAgentStaging from "./components/DanubeAgentStaging";
 function App() {
   const [room] = useState(() => new Room({}));
 
-  const { type } = useWidgetContext();
+  // const { type } = useWidgetContext();
   // console.log("type", type);
-  // const [type, setType] = useState("ravan");
+  const [type, setType] = useState("ravan");
 
   return (
     <>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronsUpDown } from "lucide-react";
+import axios from "axios";
 export const countryCodes = [
   { code: "+93", name: "Afghanistan" },
   { code: "+355", name: "Albania" },
@@ -252,6 +253,31 @@ const CountryCode = ({ data, defaultCode = "+971" }) => {
     data(countryCode);
   }, [countryCode, data]);
 
+  useEffect(() => {
+    const localCountryCode = localStorage.getItem("countryCode");
+    if (!localCountryCode) {
+      const fetchIp = async () => {
+        const res = await axios.get("https://ipapi.co/json/");
+        setCountryCode(res.data.country_calling_code);
+        localStorage.setItem("countryCode", res.data.country_calling_code);
+        localStorage.setItem("countryName", res.data.country_name);
+      };
+      fetchIp();
+    } else {
+      setCountryCode(localCountryCode);
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   const handleClickOutside = (e: MouseEvent) => {
+  //     e.preventDefault();
+  //     if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+  //       setIsOpen(false);
+  //     }
+  //   };
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
   // useEffect(() => {
   //   const handleClickOutside = (e: MouseEvent) => {
   //     e.preventDefault();
