@@ -301,6 +301,7 @@ const RetellaiAgent = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const localCountryName = localStorage.getItem("countryName");
+    const localCity = localStorage.getItem("city");
 
     try {
       const res = await axios.post(
@@ -312,7 +313,7 @@ const RetellaiAgent = () => {
           phone: countryCode + formData.phone,
           name: formData.name,
           email: formData.email,
-          country: localCountryName,
+          country: `${localCountryName} , ${localCity}`,
         }
       );
 
