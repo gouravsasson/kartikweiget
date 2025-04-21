@@ -313,7 +313,7 @@ const RetellaiAgent = () => {
           phone: countryCode + formData.phone,
           name: formData.name,
           email: formData.email,
-          country: `${localCountryName} , ${localCity}`,
+          country: `${localCountryName}  ${localCity}`,
         }
       );
 
