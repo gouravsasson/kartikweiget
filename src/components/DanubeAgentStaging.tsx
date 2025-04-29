@@ -30,6 +30,7 @@ import CountryCode from "./CountryCode";
 import startsWith from "lodash.startswith";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import CryptoJS from "crypto-js";
 
 // Header Component
 const Header = ({ onMinimize, onClose }) => (
@@ -160,9 +161,11 @@ const UserForm = ({
 
 // Main Component
 const DanubeAgentStaging = () => {
+  // const CryptoJS = require("crypto-js");
+  const SECRET_KEY = "qwertyuiopasdfghjklzxcvbnm";
   const decoder = new TextDecoder();
   const containerRef = useRef(null);
-  const [countryCode, setCountryCode] = useState("+971");
+  const [countryCode, setCountryCode] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
@@ -232,6 +235,14 @@ const DanubeAgentStaging = () => {
       }
     }
   });
+
+  function encryptData(data) {
+    const ciphertext = CryptoJS.AES.encrypt(
+      JSON.stringify(data),
+      SECRET_KEY
+    ).toString();
+    return ciphertext;
+  }
 
   useEffect(() => {
     // Set flag when page is about to refresh
@@ -479,7 +490,15 @@ const DanubeAgentStaging = () => {
     setPhoneError("");
 
     ensureMicrophonePermission();
-
+    const payload = {
+      schema_name: "Danubeproperty",
+      agent_code: 17,
+      quick_campaign_id: "quickcamp1175ea81",
+      phone: "+" + countryCode + formData.phone,
+      name: formData.name,
+      email: formData.email,
+    };
+    // const encryptedPayload = encryptData(payload);
     try {
       const res = await axios.post(
         "https://danube.closerx.ai/api/ravan-ai-start/",
@@ -487,7 +506,7 @@ const DanubeAgentStaging = () => {
           schema_name: "Danubeproperty",
           agent_code: 17,
           quick_campaign_id: "quickcamp1175ea81",
-          phone: countryCode + formData.phone,
+          phone: "+" + countryCode + formData.phone,
           name: formData.name,
           email: formData.email,
         }
