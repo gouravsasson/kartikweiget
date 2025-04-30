@@ -162,7 +162,7 @@ const UserForm = ({
 // Main Component
 const DanubeAgentStaging = () => {
   // const CryptoJS = require("crypto-js");
-  const SECRET_KEY = "qwertyuiopasdfghjklzxcvbnm";
+  const SECRET_KEY = "GOURAV";
   const decoder = new TextDecoder();
   const containerRef = useRef(null);
   const [countryCode, setCountryCode] = useState("");
@@ -237,11 +237,22 @@ const DanubeAgentStaging = () => {
   });
 
   function encryptData(data) {
-    const ciphertext = CryptoJS.AES.encrypt(
-      JSON.stringify(data),
-      SECRET_KEY
-    ).toString();
-    return ciphertext;
+    const key = CryptoJS.SHA256("GOURAV"); // Matches Python's SHA256 key
+    const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+    return encrypted.toString(); // base64
+  }
+
+  function decryptData(ciphertext) {
+    const key = CryptoJS.SHA256("GOURAV");
+    const decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+    const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8);
+    return JSON.parse(decryptedStr);
   }
 
   useEffect(() => {
@@ -491,29 +502,26 @@ const DanubeAgentStaging = () => {
 
     ensureMicrophonePermission();
     const payload = {
-      schema_name: "Danubeproperty",
-      agent_code: 17,
-      quick_campaign_id: "quickcamp1175ea81",
+      schema_name: "manant123",
+      agent_code: 250,
+      quick_campaign_id: "quickcamp5d5e9a69",
       phone: "+" + countryCode + formData.phone,
       name: formData.name,
       email: formData.email,
     };
-    // const encryptedPayload = encryptData(payload);
+    const encryptedPayload = encryptData(payload);
     try {
       const res = await axios.post(
-        "https://danube.closerx.ai/api/ravan-ai-start/",
+        "https://test.closerx.ai/api/ravan-ai-start/",
         {
-          schema_name: "Danubeproperty",
-          agent_code: 17,
-          quick_campaign_id: "quickcamp1175ea81",
-          phone: "+" + countryCode + formData.phone,
-          name: formData.name,
-          email: formData.email,
+          encryptedPayload,
         }
       );
 
-      const accessToken = res.data.response.access_token;
-      const newCallId = res.data.response.call_id;
+      const decryptedPayload = decryptData(res.data.response);
+
+      const accessToken = decryptedPayload.access_token;
+      const newCallId = decryptedPayload.call_id;
 
       if (newCallId) {
         const priorCallIdList = JSON.parse(

@@ -34,7 +34,7 @@ class ReactWidget extends HTMLElement {
         <WidgetProvider agent_id={agent_id} schema={schema} type={type}>
           <App />
           <Analytics />
-          <SpeedInsights /> 
+          <SpeedInsights />
         </WidgetProvider>
       </React.StrictMode>
     );

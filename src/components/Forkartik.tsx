@@ -39,7 +39,7 @@ const VoiceAIWidget = () => {
     setStatus,
   } = useUltravoxStore();
   const baseurl = "https://app.snowie.ai";
-  const { agent_id, schema } = useWidgetContext();
+  // const { agent_id, schema } = useWidgetContext();
 
   // const agent_id = "43279ed4-9039-49c8-b11b-e90f3f7c588c";
   // const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
@@ -91,6 +91,11 @@ const VoiceAIWidget = () => {
   }
 
   const session = sessionRef.current;
+  // useEffect(() => {
+  //   session.joinCall(
+  //     "wss://prod-voice-pgaenaxiea-uc.a.run.app/calls/3c919a8c-6557-40a9-baeb-88b5b66fa928/telephony"
+  //   );
+  // }, []);
 
   const handleSubmit = () => {
     if (status != "disconnected") {
