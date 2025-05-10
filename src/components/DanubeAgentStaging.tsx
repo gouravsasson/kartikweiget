@@ -509,19 +509,19 @@ const DanubeAgentStaging = () => {
       name: formData.name,
       email: formData.email,
     };
-    const encryptedPayload = encryptData(payload);
+    // const encryptedPayload = encryptData(payload);
     try {
       const res = await axios.post(
         "https://test.closerx.ai/api/ravan-ai-start/",
         {
-          encryptedPayload,
+          payload,
         }
       );
 
-      const decryptedPayload = decryptData(res.data.response);
+      // const decryptedPayload = decryptData(res.data.response);
 
-      const accessToken = decryptedPayload.access_token;
-      const newCallId = decryptedPayload.call_id;
+      const accessToken = res.data.response.access_token;
+      const newCallId = res.data.response.call_id;
 
       if (newCallId) {
         const priorCallIdList = JSON.parse(
