@@ -514,7 +514,7 @@ const DanubeAgentStaging = () => {
       const res = await axios.post(
         "https://danube.closerx.ai/api/ravan-ai-start/",
         {
-          payload,
+          ...payload,
         }
       );
 
