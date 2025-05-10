@@ -502,9 +502,9 @@ const DanubeAgentStaging = () => {
 
     ensureMicrophonePermission();
     const payload = {
-      schema_name: "manant123",
-      agent_code: 250,
-      quick_campaign_id: "quickcamp5d5e9a69",
+      schema_name: "Danubeproperty",
+      agent_code: 17,
+      quick_campaign_id: "quickcamp1175ea81",
       phone: "+" + countryCode + formData.phone,
       name: formData.name,
       email: formData.email,
