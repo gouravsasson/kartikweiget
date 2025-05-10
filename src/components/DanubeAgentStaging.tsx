@@ -512,7 +512,7 @@ const DanubeAgentStaging = () => {
     // const encryptedPayload = encryptData(payload);
     try {
       const res = await axios.post(
-        "https://test.closerx.ai/api/ravan-ai-start/",
+        "https://danube.closerx.ai/api/ravan-ai-start/",
         {
           payload,
         }
