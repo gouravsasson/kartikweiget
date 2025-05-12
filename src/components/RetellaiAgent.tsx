@@ -27,6 +27,7 @@ import {
 } from "livekit-client";
 import axios from "axios";
 import CountryCode from "./CountryCode";
+import CryptoJS from "crypto-js";
 
 // Header Component
 const Header = ({ onMinimize, onClose }) => (
@@ -164,6 +165,8 @@ const RetellaiAgent = () => {
     medium: false,
     large: false,
   });
+  const baseUrl = "https://danube.closerx.ai";
+  // const baseUrl = "https://xjs6k34l-8000.inc1.devtunnels.ms";
 
   const handleFormShow = () => {
     return localStorage.getItem("formshow") === "true";
@@ -298,27 +301,49 @@ const RetellaiAgent = () => {
     }
   };
 
+  function encryptData(data) {
+    const key = CryptoJS.SHA256("GOURAV"); // Matches Python's SHA256 key
+    const encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key, {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+    return encrypted.toString(); // base64
+  }
+
+  function decryptData(ciphertext) {
+    const key = CryptoJS.SHA256("GOURAV");
+    const decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+    const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8);
+    return JSON.parse(decryptedStr);
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const localCountryName = localStorage.getItem("countryName");
     const localCity = localStorage.getItem("city");
+    const payload = {
+      schema_name: "Danubeproperty",
+      agent_code: 16,
+      quick_campaign_id: "quickcamp65d4a8ec",
+      phone: countryCode + formData.phone,
+      name: formData.name,
+      email: formData.email,
+      country: `${localCountryName}  ${localCity}`,
+    };
+    const encryptedPayload = encryptData(payload);
 
     try {
-      const res = await axios.post(
-        "https://danube.closerx.ai/api/ravan-ai-start/",
-        {
-          schema_name: "Danubeproperty",
-          agent_code: 16,
-          quick_campaign_id: "quickcamp65d4a8ec",
-          phone: countryCode + formData.phone,
-          name: formData.name,
-          email: formData.email,
-          country: `${localCountryName}  ${localCity}`,
-        }
-      );
+      const res = await axios.post(`${baseUrl}/api/ravan-ai-start2/`, {
+        encryptedPayload,
+      });
 
-      const accessToken = res.data.response.access_token;
-      const newCallId = res.data.response.call_id;
+      const decryptedPayload = decryptData(res.data.response);
+
+      const accessToken = decryptedPayload.access_token;
+      const newCallId = decryptedPayload.call_id;
 
       if (newCallId) {
         const priorCallIdList = JSON.parse(
@@ -360,22 +385,24 @@ const RetellaiAgent = () => {
     );
 
     const initiateCall = async () => {
+      const payload = {
+        schema_name: "Danubeproperty",
+        agent_code: 16,
+        quick_campaign_id: "quickcamp65d4a8ec",
+        prior_call_id: priorCallIdList[priorCallIdList.length - 1],
+      };
+      const encryptedPayload = encryptData(payload);
       try {
         if (priorCallIdList.length > 0 && !oneref.current) {
           oneref.current = true;
-          const res = await axios.post(
-            "https://danube.closerx.ai/api/ravan-ai-start/",
-            {
-              schema_name: "Danubeproperty",
-              agent_code: 16,
-              quick_campaign_id: "quickcamp65d4a8ec",
-              prior_call_id: priorCallIdList[priorCallIdList.length - 1],
-              // ...formData,
-            }
-          );
+          const res = await axios.post(`${baseUrl}/api/ravan-ai-start2/`, {
+            encryptedPayload,
+          });
 
-          const accessToken = res.data.response.access_token;
-          const newCallId = res.data.response.call_id;
+          const decryptedPayload = decryptData(res.data.response);
+
+          const accessToken = decryptedPayload.access_token;
+          const newCallId = decryptedPayload.call_id;
 
           if (newCallId) {
             const priorCallIdList = JSON.parse(
