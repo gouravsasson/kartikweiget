@@ -336,7 +336,7 @@ const RetellaiAgent = () => {
     const encryptedPayload = encryptData(payload);
 
     try {
-      const res = await axios.post(`${baseUrl}/api/ravan-ai-start2/`, {
+      const res = await axios.post(`${baseUrl}/api/ravan-ai-start/`, {
         encryptedPayload,
       });
 
@@ -395,7 +395,7 @@ const RetellaiAgent = () => {
       try {
         if (priorCallIdList.length > 0 && !oneref.current) {
           oneref.current = true;
-          const res = await axios.post(`${baseUrl}/api/ravan-ai-start2/`, {
+          const res = await axios.post(`${baseUrl}/api/ravan-ai-start/`, {
             encryptedPayload,
           });
 
