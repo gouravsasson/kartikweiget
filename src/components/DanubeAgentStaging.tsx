@@ -509,19 +509,19 @@ const DanubeAgentStaging = () => {
       name: formData.name,
       email: formData.email,
     };
-    // const encryptedPayload = encryptData(payload);
+    const encryptedPayload = encryptData(payload);
     try {
       const res = await axios.post(
         "https://danube.closerx.ai/api/ravan-ai-start/",
         {
-          ...payload,
+          encryptedPayload,
         }
       );
 
-      // const decryptedPayload = decryptData(res.data.response);
+      const decryptedPayload = decryptData(res.data.response);
 
-      const accessToken = res.data.response.access_token;
-      const newCallId = res.data.response.call_id;
+      const accessToken = decryptedPayload.access_token;
+      const newCallId = decryptedPayload.call_id;
 
       if (newCallId) {
         const priorCallIdList = JSON.parse(
@@ -563,22 +563,28 @@ const DanubeAgentStaging = () => {
     );
 
     const initiateCall = async () => {
+      const payload = {
+        schema_name: "Danubeproperty",
+        agent_code: 17,
+        quick_campaign_id: "quickcamp1175ea81",
+        prior_call_id: priorCallIdList[priorCallIdList.length - 1],
+        // ...formData,
+      };
+      const encryptedPayload = encryptData(payload);
       try {
         if (priorCallIdList.length > 0 && !oneref.current) {
           oneref.current = true;
           const res = await axios.post(
             "https://danube.closerx.ai/api/ravan-ai-start/",
             {
-              schema_name: "Danubeproperty",
-              agent_code: 17,
-              quick_campaign_id: "quickcamp1175ea81",
-              prior_call_id: priorCallIdList[priorCallIdList.length - 1],
-              // ...formData,
+              encryptedPayload,
             }
           );
 
-          const accessToken = res.data.response.access_token;
-          const newCallId = res.data.response.call_id;
+          const decryptedPayload = decryptData(res.data.response);
+
+          const accessToken = decryptedPayload.access_token;
+          const newCallId = decryptedPayload.call_id;
 
           if (newCallId) {
             const priorCallIdList = JSON.parse(
