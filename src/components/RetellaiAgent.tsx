@@ -153,11 +153,9 @@ const RetellaiAgent = () => {
   const room = useRoomContext();
   const [token, setToken] = useState("");
   const status = useConnectionState(room);
-  console.log("status", status);
   const serverUrl = "wss://retell-ai-4ihahnq7.livekit.cloud";
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [muted, setMuted] = useState(false);
-  console.log("muted", muted);
   const [transcripts, setTranscripts] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
   const [pulseEffects, setPulseEffects] = useState({
@@ -166,7 +164,6 @@ const RetellaiAgent = () => {
     large: false,
   });
   const baseUrl = "https://danube.closerx.ai";
-  // const baseUrl = "https://xjs6k34l-8000.inc1.devtunnels.ms";
 
   const handleFormShow = () => {
     return localStorage.getItem("formshow") === "true";
@@ -432,10 +429,7 @@ const RetellaiAgent = () => {
       }
     };
 
-    initiateCall();
-
-    console.log("expanded", expanded);
-    console.log("muted", muted);
+    initiateCall()
 
     if (expanded && muted) {
       setMuted(false);
@@ -479,7 +473,6 @@ const RetellaiAgent = () => {
   }, [isRecording]);
 
   const handleCountryCode = (data) => {
-    console.log("data", data);
     setCountryCode(data);
   };
 

@@ -3,8 +3,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { WidgetProvider } from "./constexts/WidgetContext";
 import "./index.css";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
+// import { Analytics } from "@vercel/analytics/react";
+// import { SpeedInsights } from "@vercel/speed-insights/react";
 
 class ReactWidget extends HTMLElement {
   private root: ReactDOM.Root | null = null;
@@ -33,8 +33,8 @@ class ReactWidget extends HTMLElement {
       // <React.StrictMode>
         <WidgetProvider agent_id={agent_id} schema={schema} type={type}>
           <App />
-          <Analytics />
-          <SpeedInsights />
+          {/* <Analytics /> */}
+          {/* <SpeedInsights /> */}
         </WidgetProvider>
       // </React.StrictMode>
     );
