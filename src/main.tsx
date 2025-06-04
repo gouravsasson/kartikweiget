@@ -9,7 +9,7 @@ createRoot(document.getElementById("root")!).render(
   <WidgetProvider agent_id="715cc5a6-86b0-408a-b7a8-91607231699b" schema="danube" type="ravan">
     {/* <StrictMode> */}
     <App />
-    <Analytics />
+    {/* <Analytics /> */}
     {/* </StrictMode> */}
   </WidgetProvider>
 );

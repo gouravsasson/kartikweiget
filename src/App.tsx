@@ -40,7 +40,6 @@ function App() {
         {/* retell agent made on retell */}
         {type === "retell" && <Retelltest />}
       </LiveKitRoom>
-      <Analytics />
     </>
   );
 }
