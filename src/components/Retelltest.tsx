@@ -9,7 +9,7 @@ function Retelltest() {
   const start = async () => {
     try {
       const res = await axios.post(
-        "https://danube.closerx.ai/api/ravan-ai-start/",
+        "https://danubenew.closerx.ai/api/ravan-ai-start/",
         {
           schema_name: "Danubeproperty",
           agent_code: 17,

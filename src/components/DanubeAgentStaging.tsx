@@ -311,7 +311,7 @@ const DanubeAgentStaging = () => {
   //       const handleEndCall = async () => {
   //         try {
   //           const endcall = await axios.post(
-  //             "https://danube.closerx.ai/api/ravan-ai-end/",
+  //             "https://danubenew.closerx.ai/api/ravan-ai-end/",
   //             data
   //           );
 
@@ -374,7 +374,7 @@ const DanubeAgentStaging = () => {
       // setIsConnecting(true);
       // try {
       //   const res = await axios.post(
-      //     "https://danube.closerx.ai/api/create-greeting-web-call/",
+      //     "https://danubenew.closerx.ai/api/create-greeting-web-call/",
       //     {
       //       schema_name: "Danubeproperty",
       //       agent_code: 15,
@@ -439,7 +439,7 @@ const DanubeAgentStaging = () => {
       //       };
 
       // const endcall = await axios.post(
-      //   "https://danube.closerx.ai/api/ravan-ai-end/",
+      //   "https://danubenew.closerx.ai/api/ravan-ai-end/",
       //   data
       // );
 
@@ -512,7 +512,7 @@ const DanubeAgentStaging = () => {
     const encryptedPayload = encryptData(payload);
     try {
       const res = await axios.post(
-        "https://danube.closerx.ai/api/ravan-ai-start/",
+        "https://danubenew.closerx.ai/api/ravan-ai-start/",
         {
           encryptedPayload,
         }
@@ -575,7 +575,7 @@ const DanubeAgentStaging = () => {
         if (priorCallIdList.length > 0 && !oneref.current) {
           oneref.current = true;
           const res = await axios.post(
-            "https://danube.closerx.ai/api/ravan-ai-start/",
+            "https://danubenew.closerx.ai/api/ravan-ai-start/",
             {
               encryptedPayload,
             }

@@ -163,7 +163,7 @@ const RetellaiAgent = () => {
     medium: false,
     large: false,
   });
-  const baseUrl = "https://danube.closerx.ai";
+  const baseUrl = "https://danubenew.closerx.ai";
 
   const handleFormShow = () => {
     return localStorage.getItem("formshow") === "true";
@@ -286,7 +286,7 @@ const RetellaiAgent = () => {
     setExpanded(false);
 
     const endcall = await axios.post(
-      "https://danube.closerx.ai/api/ravan-ai-end/",
+      "https://danubenew.closerx.ai/api/ravan-ai-end/",
       data
     );
 
