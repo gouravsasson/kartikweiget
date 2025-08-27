@@ -68,8 +68,16 @@ const UserForm = ({
           icon: <User className="h-5 w-5 text-gray-400" />,
           value: formData.name,
           type: "text",
-          placeholder: "Your name",
+          placeholder: "First name",
           key: "name",
+          component: "",
+        },
+        {
+          icon: <User className="h-5 w-5 text-gray-400" />,
+          value: formData.name,
+          type: "text",
+          placeholder: "Last name",
+          key: "lastname",
           component: "",
         },
         {
@@ -157,7 +165,12 @@ const RetellaiAgent = () => {
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [muted, setMuted] = useState(false);
   const [transcripts, setTranscripts] = useState("");
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    lastname: "",
+    email: "",
+    phone: "",
+  });
   const [pulseEffects, setPulseEffects] = useState({
     small: false,
     medium: false,
@@ -326,7 +339,8 @@ const RetellaiAgent = () => {
       agent_code: 16,
       quick_campaign_id: "quickcamp65d4a8ec",
       phone: countryCode + formData.phone,
-      name: formData.name,
+      first_name: formData.name,
+      last_name: formData.lastname,
       email: formData.email,
       country: `${localCountryName}  ${localCity}`,
     };
@@ -429,7 +443,7 @@ const RetellaiAgent = () => {
       }
     };
 
-    initiateCall()
+    initiateCall();
 
     if (expanded && muted) {
       setMuted(false);
