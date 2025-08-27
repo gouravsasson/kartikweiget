@@ -165,6 +165,8 @@ const RetellaiAgent = () => {
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [muted, setMuted] = useState(false);
   const [transcripts, setTranscripts] = useState("");
+  // const [microphonePermission, setMicrophonePermission] = useState("prompt");
+  // console.log("microphonePermission", microphonePermission);
   const [formData, setFormData] = useState({
     name: "",
     lastname: "",
@@ -186,6 +188,36 @@ const RetellaiAgent = () => {
   const refreshFormShow = () => {
     setShowform(handleFormShow());
   };
+
+  useEffect(() => {
+    navigator.permissions
+      .query({ name: "microphone" })
+      .then(function (permissionStatus) {
+        console.log("permissionStatus.state", permissionStatus.state);
+        localStorage.setItem("microphonePermission", permissionStatus.state);
+
+        // Optionally, listen for changes in permission status
+        permissionStatus.onchange = function () {
+          console.log("permissionStatus.state", permissionStatus.state);
+          localStorage.setItem("microphonePermission", permissionStatus.state);
+          // if (permissionStatus.state === "denied") {
+          //   alert(
+          //     "Microphone permission denied. Please allow microphone access."
+          //   );
+          //   setError(
+          //     "Microphone permission denied. Please allow microphone access."
+          //   );
+          //   handleClose();
+          // }
+          if (permissionStatus.state === "granted") {
+            setError("");
+          }
+        };
+      })
+      .catch(function (error) {
+        console.log("Permission API not supported or error occurred", error);
+      });
+  }, []);
 
   const transcriptEmitter = new EventEmitter();
 
@@ -332,6 +364,12 @@ const RetellaiAgent = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const microphonePermission = localStorage.getItem("microphonePermission");
+    if (microphonePermission === "denied") {
+      alert("Microphone permission denied. Please allow microphone access.");
+      setError("Microphone permission denied. Please allow microphone access.");
+      return;
+    }
     const localCountryName = localStorage.getItem("countryName");
     const localCity = localStorage.getItem("city");
     const payload = {
@@ -388,6 +426,13 @@ const RetellaiAgent = () => {
 
   useEffect(() => {
     const formshow = localStorage.getItem("formshow") === "true";
+    const microphonePermission = localStorage.getItem("microphonePermission");
+    if (microphonePermission === "denied" && !oneref.current) {
+      alert("Microphone permission denied. Please allow microphone access.");
+      setError("Microphone permission denied. Please allow microphone access.");
+      handleClose();
+      return;
+    }
     if (formshow) {
       refreshFormShow();
     }
