@@ -74,7 +74,7 @@ const UserForm = ({
         },
         {
           icon: <User className="h-5 w-5 text-gray-400" />,
-          value: formData.name,
+          value: formData.lastname,
           type: "text",
           placeholder: "Last name",
           key: "lastname",
