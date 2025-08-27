@@ -129,7 +129,15 @@ const UserForm = ({
 
       <button
         type="submit"
-        className="w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
+        disabled={
+          state === "connecting" ||
+          localStorage.getItem("microphonePermission") === "denied"
+        }
+        className={`w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors ${
+          localStorage.getItem("microphonePermission") === "denied"
+            ? "opacity-50 cursor-not-allowed"
+            : ""
+        }`}
       >
         {state === "connecting" ? (
           <div className="flex items-center justify-center">
@@ -200,15 +208,6 @@ const RetellaiAgent = () => {
         permissionStatus.onchange = function () {
           console.log("permissionStatus.state", permissionStatus.state);
           localStorage.setItem("microphonePermission", permissionStatus.state);
-          // if (permissionStatus.state === "denied") {
-          //   alert(
-          //     "Microphone permission denied. Please allow microphone access."
-          //   );
-          //   setError(
-          //     "Microphone permission denied. Please allow microphone access."
-          //   );
-          //   handleClose();
-          // }
           if (permissionStatus.state === "granted") {
             setError("");
           }
@@ -338,7 +337,8 @@ const RetellaiAgent = () => {
     if (endcall.status === 200) {
       stopRecording();
       setSpeech("");
-      localStorage.clear();
+      localStorage.removeItem("formshow");
+      localStorage.removeItem("priorCallIdList");
       room.disconnect();
     }
   };
@@ -365,8 +365,10 @@ const RetellaiAgent = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const microphonePermission = localStorage.getItem("microphonePermission");
+    console.log("microphonePermission", microphonePermission);
     if (microphonePermission === "denied") {
-      alert("Microphone permission denied. Please allow microphone access.");
+      console.log("microphonePermission", microphonePermission);
+      // alert("Microphone permission denied. Please allow microphone access.");
       setError("Microphone permission denied. Please allow microphone access.");
       return;
     }
@@ -428,7 +430,7 @@ const RetellaiAgent = () => {
     const formshow = localStorage.getItem("formshow") === "true";
     const microphonePermission = localStorage.getItem("microphonePermission");
     if (microphonePermission === "denied" && !oneref.current) {
-      alert("Microphone permission denied. Please allow microphone access.");
+      // alert("Microphone permission denied. Please allow microphone access.");
       setError("Microphone permission denied. Please allow microphone access.");
       handleClose();
       return;
