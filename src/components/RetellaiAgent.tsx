@@ -60,6 +60,7 @@ const UserForm = ({
   error,
   state,
   handleCountryCode,
+  desableSubmit,
 }) => (
   <form onSubmit={onSubmit}>
     <div className="flex flex-col gap-4 m-4">
@@ -131,7 +132,8 @@ const UserForm = ({
         type="submit"
         disabled={
           state === "connecting" ||
-          localStorage.getItem("microphonePermission") === "denied"
+          localStorage.getItem("microphonePermission") === "denied" ||
+          desableSubmit
         }
         className={`w-full bg-yellow-400 text-black font-semibold py-3 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors ${
           localStorage.getItem("microphonePermission") === "denied"
@@ -139,7 +141,7 @@ const UserForm = ({
             : ""
         }`}
       >
-        {state === "connecting" ? (
+        {state === "connecting" || desableSubmit ? (
           <div className="flex items-center justify-center">
             <Loader2 className="w-5 h-5 animate-spin" /> Connecting to AI
             Assistant
@@ -173,6 +175,7 @@ const RetellaiAgent = () => {
   const audioTrackRef = useRef<MediaStreamTrack | null>(null);
   const [muted, setMuted] = useState(false);
   const [transcripts, setTranscripts] = useState("");
+  const [desableSubmit, setDesableSubmit] = useState(false);
   // const [microphonePermission, setMicrophonePermission] = useState("prompt");
   // console.log("microphonePermission", microphonePermission);
   const [formData, setFormData] = useState({
@@ -364,6 +367,7 @@ const RetellaiAgent = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setDesableSubmit(true);
     const microphonePermission = localStorage.getItem("microphonePermission");
     console.log("microphonePermission", microphonePermission);
     if (microphonePermission === "denied") {
@@ -422,6 +426,8 @@ const RetellaiAgent = () => {
     } catch (err) {
       console.error("Form error:", err);
       setError("Unable to continue conversation.");
+    } finally {
+      setDesableSubmit(false);
     }
   };
   const oneref = useRef(false);
@@ -663,6 +669,7 @@ const RetellaiAgent = () => {
                 error={error}
                 state={room.state}
                 handleCountryCode={handleCountryCode}
+                desableSubmit={desableSubmit}
               />
             ) : (
               <div className="relative p-4 w-full ">
