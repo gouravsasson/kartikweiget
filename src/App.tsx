@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import DanubeAgentStaging from "./components/DanubeAgentStaging";
 import { Analytics } from "@vercel/analytics/react";
 import axios from "axios";
+import Maya from "./components/Maya";
 function App() {
   useEffect(() => {
     const localCountryCode = localStorage.getItem("countryCode");
@@ -39,6 +40,7 @@ function App() {
         {type === "thunder" && <Forkartik />}
         {/* retell agent made on retell */}
         {type === "retell" && <Retelltest />}
+        {type==="maya" && <Maya/>}
       </LiveKitRoom>
     </>
   );
