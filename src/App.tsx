@@ -9,6 +9,7 @@ import DanubeAgentStaging from "./components/DanubeAgentStaging";
 import { Analytics } from "@vercel/analytics/react";
 import axios from "axios";
 import Maya from "./components/Maya";
+import SobhaAgent from "./components/Sobha";
 function App() {
   useEffect(() => {
     const localCountryCode = localStorage.getItem("countryCode");
@@ -41,6 +42,7 @@ function App() {
         {/* retell agent made on retell */}
         {type === "retell" && <Retelltest />}
         {type==="maya" && <Maya/>}
+        {type==="sobha" && <SobhaAgent/>}
       </LiveKitRoom>
     </>
   );
