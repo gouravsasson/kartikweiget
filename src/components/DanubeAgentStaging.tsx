@@ -32,6 +32,214 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import CryptoJS from "crypto-js";
 
+var country_list = [
+  "Afghanistan",
+  "Albania",
+  "Algeria",
+  "Andorra",
+  "Angola",
+  "Anguilla",
+  "Antigua &amp; Barbuda",
+  "Argentina",
+  "Armenia",
+  "Aruba",
+  "Australia",
+  "Austria",
+  "Azerbaijan",
+  "Bahamas",
+  "Bahrain",
+  "Bangladesh",
+  "Barbados",
+  "Belarus",
+  "Belgium",
+  "Belize",
+  "Benin",
+  "Bermuda",
+  "Bhutan",
+  "Bolivia",
+  "Bosnia &amp; Herzegovina",
+  "Botswana",
+  "Brazil",
+  "British Virgin Islands",
+  "Brunei",
+  "Bulgaria",
+  "Burkina Faso",
+  "Burundi",
+  "Cambodia",
+  "Cameroon",
+  "Cape Verde",
+  "Cayman Islands",
+  "Chad",
+  "Chile",
+  "China",
+  "Colombia",
+  "Congo",
+  "Cook Islands",
+  "Costa Rica",
+  "Cote D Ivoire",
+  "Croatia",
+  "Cruise Ship",
+  "Cuba",
+  "Cyprus",
+  "Czech Republic",
+  "Denmark",
+  "Djibouti",
+  "Dominica",
+  "Dominican Republic",
+  "Ecuador",
+  "Egypt",
+  "El Salvador",
+  "Equatorial Guinea",
+  "Estonia",
+  "Ethiopia",
+  "Falkland Islands",
+  "Faroe Islands",
+  "Fiji",
+  "Finland",
+  "France",
+  "French Polynesia",
+  "French West Indies",
+  "Gabon",
+  "Gambia",
+  "Georgia",
+  "Germany",
+  "Ghana",
+  "Gibraltar",
+  "Greece",
+  "Greenland",
+  "Grenada",
+  "Guam",
+  "Guatemala",
+  "Guernsey",
+  "Guinea",
+  "Guinea Bissau",
+  "Guyana",
+  "Haiti",
+  "Honduras",
+  "Hong Kong",
+  "Hungary",
+  "Iceland",
+  "India",
+  "Indonesia",
+  "Iran",
+  "Iraq",
+  "Ireland",
+  "Isle of Man",
+  "Israel",
+  "Italy",
+  "Jamaica",
+  "Japan",
+  "Jersey",
+  "Jordan",
+  "Kazakhstan",
+  "Kenya",
+  "Kuwait",
+  "Kyrgyz Republic",
+  "Laos",
+  "Latvia",
+  "Lebanon",
+  "Lesotho",
+  "Liberia",
+  "Libya",
+  "Liechtenstein",
+  "Lithuania",
+  "Luxembourg",
+  "Macau",
+  "Macedonia",
+  "Madagascar",
+  "Malawi",
+  "Malaysia",
+  "Maldives",
+  "Mali",
+  "Malta",
+  "Mauritania",
+  "Mauritius",
+  "Mexico",
+  "Moldova",
+  "Monaco",
+  "Mongolia",
+  "Montenegro",
+  "Montserrat",
+  "Morocco",
+  "Mozambique",
+  "Namibia",
+  "Nepal",
+  "Netherlands",
+  "Netherlands Antilles",
+  "New Caledonia",
+  "New Zealand",
+  "Nicaragua",
+  "Niger",
+  "Nigeria",
+  "Norway",
+  "Oman",
+  "Pakistan",
+  "Palestine",
+  "Panama",
+  "Papua New Guinea",
+  "Paraguay",
+  "Peru",
+  "Philippines",
+  "Poland",
+  "Portugal",
+  "Puerto Rico",
+  "Qatar",
+  "Reunion",
+  "Romania",
+  "Russia",
+  "Rwanda",
+  "Saint Pierre &amp; Miquelon",
+  "Samoa",
+  "San Marino",
+  "Satellite",
+  "Saudi Arabia",
+  "Senegal",
+  "Serbia",
+  "Seychelles",
+  "Sierra Leone",
+  "Singapore",
+  "Slovakia",
+  "Slovenia",
+  "South Africa",
+  "South Korea",
+  "Spain",
+  "Sri Lanka",
+  "St Kitts &amp; Nevis",
+  "St Lucia",
+  "St Vincent",
+  "St. Lucia",
+  "Sudan",
+  "Suriname",
+  "Swaziland",
+  "Sweden",
+  "Switzerland",
+  "Syria",
+  "Taiwan",
+  "Tajikistan",
+  "Tanzania",
+  "Thailand",
+  "Timor L'Este",
+  "Togo",
+  "Tonga",
+  "Trinidad &amp; Tobago",
+  "Tunisia",
+  "Turkey",
+  "Turkmenistan",
+  "Turks &amp; Caicos",
+  "Uganda",
+  "Ukraine",
+  "United Arab Emirates",
+  "United Kingdom",
+  "Uruguay",
+  "Uzbekistan",
+  "Venezuela",
+  "Vietnam",
+  "Virgin Islands (US)",
+  "Yemen",
+  "Zambia",
+  "Zimbabwe",
+];
+
 // Header Component
 const Header = ({ onMinimize, onClose }) => (
   <div className="relative p-4 flex justify-between bg-black items-center">
@@ -89,81 +297,7 @@ const UserForm = ({
             key: "email",
             component: "",
           },
-          {
-            icon: <></>, // no icon needed, but keeps structure consistent
-            placeholder: "Select Budget",
-            key: "budget",
-            component: (
-              <select
-                required
-                value={formData.budget}
-                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-              >
-                <option value="" disabled>Select Budget</option>
-                <option value="1m-2m">AED 1M to 2M</option>
-                <option value="2m-3m">AED 2M to 3M</option>
-                <option value="3m-5m">AED 3M to 5M</option>
-                <option value="5m+">AED 5M+</option>
-              </select>
-            ),
-          },
-          {
-            icon: <></>,
-            placeholder: "Select Unit Type",
-            key: "unitType",
-            component: (
-              <select
-                required
-                value={formData.unitType}
-                onChange={(e) => setFormData({ ...formData, unitType: e.target.value })}
-                className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-              >
-                <option value="" disabled>Select Unit Type</option>
-                <option value="studio">Studio</option>
-                <option value="1br">1 Bedroom</option>
-                <option value="2-3br">2 or 3 Bedrooms</option>
-              </select>
-            ),
-          },
-          {
-            icon: <></>,
-            placeholder: "Select Purchase Timeline",
-            key: "timeline",
-            component: (
-              <select
-                required
-                value={formData.timeline}
-                onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
-                className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-              >
-                <option value="" disabled>Select Purchase Timeline</option>
-                <option value="immediate">Immediate</option>
-                <option value="3-6months">3-6 Months</option>
-                <option value="6-12months">6-12 Months</option>
-                <option value="12months+">12 Months+</option>
-              </select>
-            ),
-          },
-          {
-            icon: <></>,
-            placeholder: "Select Nationality",
-            key: "nationality",
-            component: (
-              <select
-                required
-                value={formData.nationality}
-                onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-              >
-                <option value="" disabled>Select Nationality</option>
-                <option value="uae">UAE</option>
-                <option value="india">India</option>
-                <option value="uk">UK</option>
-                <option value="other">Other</option>
-              </select>
-            ),
-          },
+          
         ].map((field, index) => (
           <div className="relative" key={index}>
             <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
@@ -192,6 +326,74 @@ const UserForm = ({
             </div>
           </div>
         ))}
+
+        <select
+          required
+          value={formData.budget}
+          onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+          className="block w-full px-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+        >
+          <option value="" disabled>
+            Select Budget
+          </option>
+          <option value="1m-2m">AED 1M to 2M</option>
+          <option value="2m-3m">AED 2M to 3M</option>
+          <option value="3m-5m">AED 3M to 5M</option>
+          <option value="5m+">AED 5M+</option>
+        </select>
+
+        {/* Unit Type Dropdown */}
+        <select
+          required
+          value={formData.unitType}
+          onChange={(e) => setFormData({ ...formData, unitType: e.target.value })}
+          className="block w-full px-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+        >
+          <option value="" disabled>
+            Select Unit Type
+          </option>
+          <option value="studio">Studio</option>
+          <option value="1br">1 Bedroom</option>
+          <option value="2br">2 Bedrooms</option>
+          <option value="3br">3 Bedrooms</option>
+        </select>
+
+        {/* Purchase Timeline Dropdown */}
+        <select
+          required
+          value={formData.timeline}
+          onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
+          className="block w-full px-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+        >
+          <option value="" disabled>
+            Select Purchase Timeline
+          </option>
+          <option value="60days">Within 60 days</option>
+          <option value="90days">Within 90 days</option>
+          <option value="after90">After 90 days</option>
+        </select>
+
+        {/* Nationality Dropdown */}
+        <select
+          required
+          value={formData.nationality}
+          onChange={(e) =>
+            setFormData({ ...formData, nationality: e.target.value })
+          }
+          className="block w-full px-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+        >
+          <option value="" disabled>
+            Select Nationality
+          </option>
+          {country_list.map((country) => {
+            const label = country.replace(/&amp;/g, "&");
+            return (
+              <option key={label} value={label}>
+                {label}
+              </option>
+            );
+          })}
+        </select>
         <PhoneInput
           dropdownClass="bottom-10 z-50"
           dropdownStyle={{ zIndex: 1000 }}
@@ -255,16 +457,16 @@ const DanubeAgentStaging = () => {
   const [muted, setMuted] = useState(false);
   console.log("muted", muted);
   const [transcripts, setTranscripts] = useState("");
-const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    budget: "",          // ← NEW
-    unitType: "",        // ← NEW
-    timeline: "",        // ← NEW
-    nationality: "",     // ← NEW
+    budget: "", // ← NEW
+    unitType: "", // ← NEW
+    timeline: "", // ← NEW
+    nationality: "", // ← NEW
   });
-    const [pulseEffects, setPulseEffects] = useState({
+  const [pulseEffects, setPulseEffects] = useState({
     small: false,
     medium: false,
     large: false,
@@ -591,12 +793,10 @@ const [formData, setFormData] = useState({
       phone: "+" + countryCode + formData.phone,
       name: formData.name,
       email: formData.email,
-      Purchase_Timeline__c:formData.timeline,
-      Unit_Type1__c:formData.unitType,
-      Budget_Range__c:formData.budget,
-      Nationality__c:formData.nationality
-
-
+      purchase_timeline: formData.timeline,
+      unit_type: formData.unitType,
+      budget_range: formData.budget,
+      nationality: formData.nationality,
     };
     const encryptedPayload = encryptData(payload);
     try {
