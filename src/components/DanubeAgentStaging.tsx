@@ -89,6 +89,81 @@ const UserForm = ({
             key: "email",
             component: "",
           },
+          {
+            icon: <></>, // no icon needed, but keeps structure consistent
+            placeholder: "Select Budget",
+            key: "budget",
+            component: (
+              <select
+                required
+                value={formData.budget}
+                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+              >
+                <option value="" disabled>Select Budget</option>
+                <option value="1m-2m">AED 1M to 2M</option>
+                <option value="2m-3m">AED 2M to 3M</option>
+                <option value="3m-5m">AED 3M to 5M</option>
+                <option value="5m+">AED 5M+</option>
+              </select>
+            ),
+          },
+          {
+            icon: <></>,
+            placeholder: "Select Unit Type",
+            key: "unitType",
+            component: (
+              <select
+                required
+                value={formData.unitType}
+                onChange={(e) => setFormData({ ...formData, unitType: e.target.value })}
+                className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+              >
+                <option value="" disabled>Select Unit Type</option>
+                <option value="studio">Studio</option>
+                <option value="1br">1 Bedroom</option>
+                <option value="2-3br">2 or 3 Bedrooms</option>
+              </select>
+            ),
+          },
+          {
+            icon: <></>,
+            placeholder: "Select Purchase Timeline",
+            key: "timeline",
+            component: (
+              <select
+                required
+                value={formData.timeline}
+                onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
+                className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+              >
+                <option value="" disabled>Select Purchase Timeline</option>
+                <option value="immediate">Immediate</option>
+                <option value="3-6months">3-6 Months</option>
+                <option value="6-12months">6-12 Months</option>
+                <option value="12months+">12 Months+</option>
+              </select>
+            ),
+          },
+          {
+            icon: <></>,
+            placeholder: "Select Nationality",
+            key: "nationality",
+            component: (
+              <select
+                required
+                value={formData.nationality}
+                onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                className="block w-full pl-12 pr-4 py-2 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+              >
+                <option value="" disabled>Select Nationality</option>
+                <option value="uae">UAE</option>
+                <option value="india">India</option>
+                <option value="uk">UK</option>
+                <option value="other">Other</option>
+              </select>
+            ),
+          },
         ].map((field, index) => (
           <div className="relative" key={index}>
             <div className="absolute inset-y-0 left-2 flex items-center pointer-events-none">
@@ -180,8 +255,16 @@ const DanubeAgentStaging = () => {
   const [muted, setMuted] = useState(false);
   console.log("muted", muted);
   const [transcripts, setTranscripts] = useState("");
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
-  const [pulseEffects, setPulseEffects] = useState({
+const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    budget: "",          // ← NEW
+    unitType: "",        // ← NEW
+    timeline: "",        // ← NEW
+    nationality: "",     // ← NEW
+  });
+    const [pulseEffects, setPulseEffects] = useState({
     small: false,
     medium: false,
     large: false,
@@ -508,6 +591,12 @@ const DanubeAgentStaging = () => {
       phone: "+" + countryCode + formData.phone,
       name: formData.name,
       email: formData.email,
+      Purchase_Timeline__c:formData.timeline,
+      Unit_Type1__c:formData.unitType,
+      Budget_Range__c:formData.budget,
+      Nationality__c:formData.nationality
+
+
     };
     const encryptedPayload = encryptData(payload);
     try {
