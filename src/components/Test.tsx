@@ -1,86 +1,107 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import EventEmitter from "eventemitter3";
 import {
   Mic,
   Send,
   X,
   Minimize2,
-  Pause,
   Phone,
-  User,
   Mail,
+  User,
+  Loader2,
 } from "lucide-react";
-import { MicOff } from "lucide-react";
-import axios from "axios";
-import { UltravoxSession } from "ultravox-client";
-import { useWidgetContext } from "../constexts/WidgetContext";
-import useSessionStore from "../store/session";
-import { useUltravoxStore } from "../store/ultrasession";
 import logo from "../assets/logo.png";
+import {
+  RoomAudioRenderer,
+  useConnectionState,
+  useRoomContext,
+  useIsMuted,
+  useTracks,
+  TrackReference,
+} from "@livekit/components-react";
+import {
+  DataPacket_Kind,
+  RemoteParticipant,
+  RoomEvent,
+  Track,
+} from "livekit-client";
+import axios from "axios";
+import CountryCode from "./CountryCode";
+import CryptoJS from "crypto-js";
 
-const Test = () => {
-  const [expanded, setExpanded] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  // const [transcription, setTranscription] = useState("");
+// Header Component
+
+
+
+
+// Main Component
+const RetellaiAgent = () => {
+  const decoder = new TextDecoder();
   const containerRef = useRef(null);
+  const [expanded, setExpanded] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [isGlowing, setIsGlowing] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [fisrtisMuted, setfirstIsMuted] = useState(false);
-  const [speech, setSpeech] = useState("");
-  const [isVisible, setIsVisible] = useState(true);
-  const [auto_end_call, setAutoEndCall] = useState(false);
-  const [pulseEffects, setPulseEffects] = useState({
-    small: false,
-    medium: false,
-    large: false,
+  const room = useRoomContext();
+  const status = useConnectionState(room);
+  const serverUrl = "wss://abcd-sw47y5hk.livekit.cloud";
+  const audioTrackRef = useRef<MediaStreamTrack | null>(null);
+  const [muted, setMuted] = useState(false);
+  const [transcripts, setTranscripts] = useState("");
+  
+  
+  const baseUrl = "http://localhost:8000/api/create-room/";
+
+ 
+
+
+  const transcriptEmitter = new EventEmitter();
+
+  // Original LiveKit Room event listener
+  room.on(
+    RoomEvent.DataReceived,
+    (
+      payload: Uint8Array,
+      participant?: RemoteParticipant,
+      kind?: DataPacket_Kind,
+      topic?: string
+    ) => {
+      // Decode and parse the payload
+      let decodedData = decoder.decode(payload);
+      let event = JSON.parse(decodedData);
+
+      // Emit a custom event with EventEmitter3
+      transcriptEmitter.emit("dataReceived", event, participant, kind, topic);
+    }
+  );
+
+  // Listen for the custom 'dataReceived' event with EventEmitter3
+  transcriptEmitter.on("dataReceived", (event, participant, kind, topic) => {
+    if (event.event_type === "update") {
+      const alltrans = event.transcript;
+      let Trans = "";
+
+      for (let index = 0; index < alltrans.length; index++) {
+        const currentTranscript = alltrans[index];
+        Trans = currentTranscript.content;
+
+        if (currentTranscript) {
+          setTranscripts(Trans); // Update state with the latest transcript
+        }
+      }
+    }
   });
-  const [message, setMessage] = useState("");
-  const hasReconnected = useRef(false);
-  const hasClosed = useRef(false);
-
-  const { callSessionIds, setCallSessionIds } = useSessionStore();
-  const {
-    setSession,
-    transcripts,
-    setTranscripts,
-    isListening,
-    setIsListening,
-    status,
-    setStatus,
-  } = useUltravoxStore();
-  const baseurl = "https://app.snowie.ai";
-  // const { agent_id, schema } = useWidgetContext();
-
-  const agent_id = "23a1b978-a911-4e95-951f-d0fbe8a92f04";
-  const schema = "6af30ad4-a50c-4acc-8996-d5f562b6987f";
-  let existingCallSessionIds: string[] = [];
-  const storedIds = localStorage.getItem("callSessionId");
-
-  const debugMessages = new Set(["debug"]);
 
   useEffect(() => {
-    if (status === "disconnected") {
-      setSpeech("Talk To John");
-    } else if (status === "connecting") {
-      setSpeech("Connecting To John");
-    } else if (status === "speaking") {
-      setSpeech("John is Speaking");
-    } else if (status === "connected") {
-      setSpeech("Connected To John");
-    } else if (status === "disconnecting") {
-      setSpeech("Ending Conversation With John");
-    } else if (status === "listening") {
-      setSpeech("John is Listening");
-    }
-  }, [status]);
-
+    return () => {
+      transcriptEmitter.removeAllListeners("dataReceived");
+    };
+  }, []);
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        // console.log("gg", document.visibilityState);
-        session.muteSpeaker();
+        setMuted(true);
       } else if (document.visibilityState === "visible") {
-        session.unmuteSpeaker();
+        setMuted(false);
       }
     };
 
@@ -91,250 +112,121 @@ const Test = () => {
     };
   }, []);
 
-  const sessionRef = useRef<UltravoxSession | null>(null);
-  if (!sessionRef.current) {
-    sessionRef.current = new UltravoxSession({
-      experimentalMessages: debugMessages,
+  // for first time
+  const toggleExpand = async () => {
+    const priorCallIdList = JSON.parse(
+      localStorage.getItem("priorCallIdList") || "[]"
+    );
+    setExpanded(true);
+    if (
+      !expanded &&
+      status === "disconnected" &&
+      priorCallIdList.length === 0
+    ) {
+      handleCountryCode;
+      localStorage.setItem("formshow", "true");
+    } else if (muted) {
+      setMuted(false);
+    }
+  };
+
+  const handleMicClick = () => {
+    isRecording ? stopRecording() : startRecording();
+  };
+
+  const startRecording = () => {
+    setIsRecording(true);
+    setIsGlowing(true);
+    setTimeout(() => {
+      setSpeech("Hi there! How can I assist you today?");
+    }, 2000);
+  };
+
+  const stopRecording = () => {
+    setIsRecording(false);
+    setIsGlowing(false);
+  };
+
+  const handleClose = async () => {
+    const priorCallIdList = JSON.parse(
+      localStorage.getItem("priorCallIdList") || "[]"
+    );
+
+    const data =
+      priorCallIdList.length > 0
+        ? {
+            schema_name: "Danubeproperty",
+            prior_call_ids: priorCallIdList,
+          }
+        : {
+            prior_call_ids: [],
+            schema_name: "Danubeproperty",
+          };
+    setExpanded(false);
+
+    const endcall = await axios.post(
+      "https://danubenew.closerx.ai/api/ravan-ai-end/",
+      data
+    );
+
+    if (endcall.status === 200) {
+      stopRecording();
+      setSpeech("");
+      localStorage.removeItem("formshow");
+      localStorage.removeItem("priorCallIdList");
+      room.disconnect();
+    }
+  };
+
+
+
+  const handleSubmit = async () => {
+    const microphonePermission = localStorage.getItem("microphonePermission");
+    console.log("microphonePermission", microphonePermission);
+
+    try {
+      const res = await axios.post(`${baseUrl}`, {
+        "room_name": "consultation_123",
+        "user_identity": "patient_456",
+        "user_name": "John Doe",
+        "token_ttl": 3600,
+        "empty_timeout": 300,
+        "max_participants": 10,
+        "dispatch_agent": false,
+        "agent_name": "dental_assistant"
     });
+      console.log("Create room response:", res.data);
 
-    setSession(sessionRef.current);
-  }
+      const decryptedPayload = res.data.response;
 
-  const session = sessionRef.current;
+      const accessToken = decryptedPayload.access_token;
 
-  const handleSubmit = () => {
-    if (status != "disconnected") {
-      session.sendText(`${message}`);
-      setMessage("");
+      await room.connect(serverUrl, accessToken);
+      setMuted(false);
+      localStorage.setItem("formshow", "false");
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const [audioTrack] = stream.getAudioTracks();
+      await room.localParticipant.publishTrack(audioTrack);
+      audioTrackRef.current = audioTrack;
+      setTranscripts("");
+    } catch (err) {
+      console.error("Form error:", err);
+    } finally {
+      console.log("Request completed");
     }
   };
 
-  useEffect(() => {
-    // Set flag when page is about to refresh
-    const handleBeforeUnload = () => {
-      sessionStorage.setItem("isRefreshing", "true");
-    };
 
-    // Clear flag when page loads (this will execute after refresh)
-    const clearRefreshFlag = () => {
-      sessionStorage.removeItem("isRefreshing");
-    };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("load", clearRefreshFlag);
-
-    // Initial cleanup of any leftover flag
-    clearRefreshFlag();
-
-    // Cleanup listeners
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("load", clearRefreshFlag);
-    };
-  }, []);
-
-  // disconnecting
-  useEffect(() => {
-    // console.log("status", status);
-
-    if (status === "disconnecting" && !hasClosed.current) {
-      // console.log("auto disconnect");
-
-      // Only run cleanup if this isn't a page refresh
-      const isPageRefresh = sessionStorage.getItem("isRefreshing") === "true";
-
-      if (!isPageRefresh) {
-        const callSessionId = JSON.parse(
-          localStorage.getItem("callSessionId") || "[]"
-        );
-
-        const handleClose = async () => {
-          await session.leaveCall();
-          localStorage.clear();
-
-          const response = await axios.post(
-            `${baseurl}/api/end-call-session-ultravox/`,
-            {
-              call_session_id: callSessionIds,
-              schema_name: schema,
-              prior_call_ids: callSessionId,
-            }
-          );
-          hasClosed.current = false;
-
-          setTranscripts(null);
-          toggleVoice(false);
-          setfirstIsMuted(false);
-        };
-
-        handleClose();
-      }
-    }
-  }, [status]);
 
   useEffect(() => {
-    const callId = localStorage.getItem("callId");
-    // console.log(callId, status, hasReconnected.current);
-    if (callId && status === "disconnected" && !hasReconnected.current) {
-      setIsMuted(true);
-      setfirstIsMuted(true);
-      handleMicClickForReconnect(callId);
-      hasReconnected.current = true;
-    } else if (status === "listening" && callId && isMuted && !expanded) {
-      session.muteSpeaker();
+    const container = containerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
     }
-  }, [status]);
+  }, [transcripts]);
 
-  const handleMicClickForReconnect = async (id) => {
-    try {
-      const response = await axios.post(`${baseurl}/api/start-thunder/`, {
-        agent_code: agent_id,
-        schema_name: schema,
-        prior_call_id: id,
-      });
-
-      const wssUrl = response.data.joinUrl;
-      const callId = response.data.callId;
-
-      localStorage.setItem("callId", callId);
-      // setCallId(callId);
-      setCallSessionIds(response.data.call_session_id);
-      if (storedIds) {
-        try {
-          const parsedIds = JSON.parse(storedIds);
-          // Ensure it's actually an array
-          if (Array.isArray(parsedIds)) {
-            existingCallSessionIds = parsedIds;
-          }
-        } catch (parseError) {
-          console.warn("Could not parse callSessionId:", parseError);
-          // Optional: clear invalid data
-          localStorage.removeItem("callSessionId");
-        }
-      }
-
-      // Append the new ID
-      existingCallSessionIds.push(callId);
-
-      // Store back in localStorage
-      localStorage.setItem(
-        "callSessionId",
-        JSON.stringify(existingCallSessionIds)
-      );
-
-      if (wssUrl) {
-        await session.joinCall(`${wssUrl}`);
-      }
-    } catch (error) {
-      console.error("Error in handleMicClick:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (status == "listening" && fisrtisMuted) {
-      console.log("status niche", status);
-      console.log("muting mic niche", fisrtisMuted);
-      session.muteSpeaker();
-
-      setfirstIsMuted(false);
-    }
-  }, [status]);
-
-  // Handle mic button click
-  const handleMicClick = async () => {
-    try {
-      if (status === "disconnected") {
-        const response = await axios.post(`${baseurl}/api/start-thunder/`, {
-          agent_code: agent_id,
-          schema_name: schema,
-        });
-
-        const wssUrl = response.data.joinUrl;
-        const callId = response.data.callId;
-        localStorage.setItem("callId", callId);
-        localStorage.setItem("wssUrl", wssUrl);
-        setCallSessionIds(response.data.call_session_id);
-        setfirstIsMuted(true);
-        if (storedIds) {
-          try {
-            const parsedIds = JSON.parse(storedIds);
-            // Ensure it's actually an array
-            if (Array.isArray(parsedIds)) {
-              existingCallSessionIds = parsedIds;
-            }
-          } catch (parseError) {
-            console.warn("Could not parse callSessionId:", parseError);
-            // Optional: clear invalid data
-            localStorage.removeItem("callSessionId");
-          }
-        }
-
-        // Append the new ID
-        existingCallSessionIds.push(callId);
-
-        // Store back in localStorage
-        localStorage.setItem(
-          "callSessionId",
-          JSON.stringify(existingCallSessionIds)
-        );
-
-        if (wssUrl) {
-          session.joinCall(`${wssUrl}`);
-        }
-        toggleVoice(true);
-      } else {
-        const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
-        await session.leaveCall();
-        console.log("call left successfully second time");
-        const response = await axios.post(
-          `${baseurl}/api/end-call-session-ultravox/`,
-          {
-            call_session_id: callSessionIds,
-            schema_name: schema,
-            prior_call_ids: callSessionId,
-          }
-        );
-
-        // console.log("Call left successfully");
-        setTranscripts(null);
-        toggleVoice(false);
-        setfirstIsMuted(false);
-        localStorage.clear();
-      }
-    } catch (error) {
-      // console.error("Error in handleMicClick:", error);
-    }
-  };
-
-  session.addEventListener("transcripts", (event) => {
-    // console.log("Transcripts updated: ", session);
-
-    const alltrans = session.transcripts;
-
-    let Trans = "";
-
-    for (let index = 0; index < alltrans.length; index++) {
-      const currentTranscript = alltrans[index];
-
-      Trans = currentTranscript.text;
-
-      if (currentTranscript) {
-        setTranscripts(Trans);
-      }
-    }
-  });
-
-  // Listen for status changing events
-  session.addEventListener("status", (event) => {
-    setStatus(session.status);
-    // console.log("Session status changed: ", session.status);
-  });
-
-  // session.addEventListener("experimental_message", (msg) => {
-  //   console.log("Got a debug message: ", JSON.stringify(msg));
-  // });
-
-  // Animated pulse effects for recording state
   useEffect(() => {
     if (isRecording) {
       const smallPulse = setInterval(() => {
@@ -357,256 +249,115 @@ const Test = () => {
     }
   }, [isRecording]);
 
-  const toggleExpand = () => {
-    if (status === "disconnected") {
-      setSpeech("Connecting To John");
-
-      handleMicClick();
-    }
-    if (session.isSpeakerMuted) {
-      setIsMuted(false);
-      session.unmuteSpeaker();
-    }
-
-    setExpanded(!expanded);
-  };
-  const togglemute = () => {
-    setExpanded(!expanded);
-    if (session.isSpeakerMuted) {
-      session.unmuteSpeaker();
-    } else {
-      session.muteSpeaker();
-    }
-  };
-
-  const handleClose = async () => {
-    if (status !== "disconnected") {
-      hasClosed.current = true;
-      const callSessionId = JSON.parse(localStorage.getItem("callSessionId"));
-      setExpanded(!expanded);
-      localStorage.clear();
-      await session.leaveCall();
-      const response = await axios.post(
-        `${baseurl}/api/end-call-session-ultravox/`,
-        {
-          call_session_id: callSessionIds,
-          schema_name: schema,
-          prior_call_ids: callSessionId,
-        }
-      );
-      hasClosed.current = false;
-      setTranscripts(null);
-      toggleVoice(false);
-      setfirstIsMuted(false);
-    } else {
-      setExpanded(!expanded);
-    }
-  };
-
-  const toggleVoice = (data) => {
-    setIsListening(data);
-  };
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
-  }, [transcripts]);
+  
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 flex flex-col items-end"
+      className="fixed bottom-[74px] right-6 z-50 flex flex-col items-end"
       style={{
         zIndex: 999,
       }}
     >
       {expanded ? (
         <div
-          className={`bg-gray-900/50 backdrop-blur-sm w-[309px]  rounded-2xl shadow-2xl overflow-hidden border ${
-            isGlowing
-              ? "border-yellow-300 shadow-yellow-400/40"
-              : "border-yellow-400"
-          } transition-all duration-500`}
+          className="bg-gray-900/50 backdrop-blur-sm w-[309px] rounded-2xl shadow-2xl overflow-hidden border"
+            
         >
-          {/* Header with glow effect */}
-          <div className="relative p-4 flex justify-between bg-black items-center">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-transparent to-yellow-500/5"></div>
-            <div className="relative flex items-center">
-              <div className="bg-black rounded-full w-8 h-8 flex items-center justify-center mr-2 border border-yellow-400 shadow-lg shadow-yellow-400/20">
-                <span className="text-yellow-400 font-bold text-xl">
-                  <img src={logo} alt="logo" className="w-6 h-6" />
-                </span>
-              </div>
-              <span className="text-white font-bold text-lg">
-                Voice Assistant
-              </span>
-            </div>
-            <div className="relative flex space-x-2">
-              <button
-                onClick={togglemute}
-                className="text-gray-300 hover:text-yellow-400 transition-colors"
-              >
-                <Minimize2 size={18} />
-              </button>
-              <button
-                onClick={handleClose}
-                className="text-gray-300 hover:text-yellow-400 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-          </div>
+          <div className="pt-10 flex flex-col items-center justify-center relative h-full w-full">
+            <div className=" black/30 w-full h-full flex items-center justify-center ">
+              {/* Cosmic background effects */}
 
-          {/* Microphone Button with enhanced visual effects */}
-          <div className="pt-10 flex flex-col items-center justify-center relative overflow-hidden w-full">
-            {/* Background glow effects */}
-            <div className="absolute inset-0 bg-gradient-to-b from-yellow-500/10 to-transparent"></div>
-            <div className="absolute w-full h-64 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/10 rounded-full blur-3xl"></div>
-            <div className="absolute w-52 h-52  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full blur-xl animate-pulse"></div>
-            <div className="absolute w-40 h-40  left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400/25 rounded-full blur-md animate-pulse"></div>
-            {/* Decorative elements */}
-            {/* <div className="absolute w-full h-full">
-              <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping"></div>
-              <div className="absolute top-3/4 left-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-300"></div>
-              <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-700"></div>
-              <div className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-500"></div>
-              <div className="absolute top-1/2 left-1/5 w-1 h-1 bg-yellow-300 rounded-full animate-ping delay-200"></div>
-            </div> */}
-            {/* Microphone button with pulse animations */}
-            <div className="relative">
-              {isRecording && pulseEffects.small && (
-                <div className="absolute inset-0 -m-3 bg-yellow-400 opacity-30 rounded-full animate-ping"></div>
-              )}
-              {isRecording && pulseEffects.medium && (
-                <div className="absolute inset-0 -m-6 bg-yellow-500 opacity-20 rounded-full animate-pulse"></div>
-              )}
-              {isRecording && pulseEffects.large && (
-                <div className="absolute inset-0 -m-12 bg-yellow-600 opacity-10 rounded-full animate-pulse"></div>
-              )}
-              {isGlowing && (
-                <div className="absolute inset-0 -m-5 bg-yellow-400 opacity-50 rounded-full animate-ping"></div>
-              )}
-              {isGlowing && (
-                <div className="absolute inset-0 -m-10 bg-yellow-400 opacity-30 rounded-full animate-pulse"></div>
-              )}
-              <button
-                onClick={handleMicClick}
-                className={`relative z-10 bg-black rounded-full w-36 h-36 flex items-center justify-center border-2 ${
-                  isGlowing
-                    ? "border-yellow-300 shadow-xl shadow-yellow-400/60"
-                    : "border-yellow-400 shadow-lg"
-                } shadow-yellow-400/30 transition-all duration-500 ${
-                  isRecording ? "scale-110" : "hover:scale-105"
-                } backdrop-blur-sm`}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-yellow-900/20 rounded-full"></div>
-                <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400/5 via-transparent to-transparent rounded-full"></div>
-                <div className="flex items-center justify-center">
-                  <span
-                    className={`text-yellow-400 font-bold text-6xl drop-shadow-xl tracking-tighter ${
-                      isRecording ? "animate-pulse" : ""
-                    }`}
+              {/* Main content container */}
+              <div className="relative  flex flex-col items-center justify-center h-full w-full">
+                <button onClick={()=>handleClose()} className="absolute top-2 right-2 text-gray-400 hover:text-gray-200">  
+                      close 
+                    </button>
+
+                {/* Microphone button with enhanced effects */}
+                <div className="relative group">
+                  <button
+                    onClick={handleMicClick}
+                    className={`relative z-10 bg-black/80 rounded-full w-36 h-36 flex items-center justify-center border-2
+              ${
+                isGlowing
+                  ? "border-yellow-300 shadow-[0_0_30px_10px_rgba(250,204,21,0.3)]"
+                  : "border-yellow-400 shadow-lg"
+              } transition-all duration-500 ${
+                      isRecording ? "scale-110" : "hover:scale-105"
+                    } backdrop-blur-sm
+              group-hover:shadow-[0_0_50px_15px_rgba(250,204,21,0.2)]`}
                   >
-                    <img src={logo} alt="logo" className="w-20 h-20" />
-                  </span>
-                </div>
-              </button>
-            </div>
-            <p className="text-yellow-400 text-sm mt-5 font-medium drop-shadow-md bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm border border-yellow-400/20">
-              {speech}
-            </p>
-            <div className=" flex flex-col gap-4 m-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  // value={formData.name}
-                  // onChange={(e) =>
-                  //   setFormData({ ...formData, name: e.target.value })
-                  // }
-                  className="block w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-                  placeholder="Your name"
-                />
-              </div>
+                    {/* Button internal gradients */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-yellow-900/20 rounded-full"></div>
+                    <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400/5 via-transparent to-transparent rounded-full"></div>
 
-              <div className="relative">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  // value={formData.email}
-                  // onChange={(e) =>
-                  //   setFormData({ ...formData, email: e.target.value })
-                  // }
-                  className="block w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-                  placeholder="Email address"
-                />
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="tel"
-                  // value={formData.phone}
-                  // onChange={(e) =>
-                  //   setFormData({ ...formData, phone: e.target.value })
-                  // }
-                  className="block w-full pl-12 pr-4 py-4 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-                  placeholder="Phone number"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-yellow-400 text-black font-semibold py-4 px-4 rounded-xl hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-colors"
-              >
-                Continue Conversation
-              </button>
-            </div>
-            {/* Transcription Box with enhanced styling */}
-            <div className="relative p-4 w-full ">
-              <div className="absolute inset-0 "></div>
-              <div className="relative">
-                <div className="flex justify-between items-center mb-2">
-            <div className="text-yellow-400 text-sm font-medium">
-                  Real-time transcription
-                </div> 
-             {/* Input Area with glass effect */}
-             <div className="relative p-3 ">
-              <div className="absolute inset-0"></div>
-              <div className="relative flex items-center space-x-2">
-                <input
-                  type="text"
-                  disabled={
-                    status === "disconnected" || status === "connecting"
+                    {/* Microphone icon with animation */}
+                    <div className="relative">
+                      <img
+                        src={logo}
+                        alt=""
+                        className={`w-16 h-16 text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]
+                  ${
+                    isRecording
+                      ? "animate-[pulse_1.5s_ease-in-out_infinite]"
+                      : ""
                   }
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSubmit(e.target.value);
-                    }
-                  }}
-                  placeholder="Type your message..."
-                  className="flex-1 bg-white text-black p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400/80 placeholder-gray-500 border border-gray-700"
-                />
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  className="p-3 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl hover:from-yellow-400 hover:to-yellow-300 transition-colors shadow-md hover:shadow-yellow-400/30"
-                >
-                  <Send size={20} className="text-black" />
-                </button>
+                  transition-transform duration-300 group-hover:scale-110`}
+                      />
+
+                      {/* Ripple effect when recording */}
+                      {isRecording && (
+                        <div className="absolute -inset-4">
+                          <div className="absolute inset-0 border-2 border-yellow-400/50 rounded-full animate-[ripple_2s_ease-out_infinite]"></div>
+                          <div className="absolute inset-0 border-2 border-yellow-400/30 rounded-full animate-[ripple_2s_ease-out_infinite_0.5s]"></div>
+                        </div>
+                      )}
+                    </div>
+                  </button>
                 </div>
+
+                {/* Status indicator */}
+                {/* {isRecording && (
+                  <div className="mt-8 px-4 py-2 bg-black/30 rounded-full border border-yellow-400/20 backdrop-blur-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      <span className="text-yellow-400 text-sm font-medium">
+                        Recording...
+                      </span>
+                    </div>
+                  </div>
+                )} */}
               </div>
             </div>
-          </div>
+              <div className="relative p-4 w-full ">
+                <div className="absolute inset-0 "></div>
+                <div className="relative">
+                  <div className="flex justify-between items-center mb-2">
+                    
+                    {isRecording && (
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></div>
+                        <span className="text-red-400 text-xs">LIVE</span>
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    ref={containerRef}
+                    className=" bg-white backdrop-blur-sm rounded-xl p-4 h-16 text-white shadow-inner border border-gray-800 overflow-y-auto scrollbar-hide ring-yellow-400/80"
+                  >
+                    <div className="relative">
+                      <span className="text-black">{transcripts}</span>
+                    </div>
+                    
+                  </div>
+                </div>
+              </div>
+              <button onClick={()=>handleSubmit()} className="absolute top-2 right-2 text-gray-400 hover:text-gray-200">  
+                      start 
+                    </button>
+
+                    
+                    </div>
         </div>
       ) : (
         <>
@@ -625,14 +376,17 @@ const Test = () => {
             </button>
             <button
               onClick={toggleExpand}
-              className="inline-block px-4 py-1 bg-black text-[#FFD700] border-2 border-[#FFD700] rounded-full font-inter font-bold text-sm no-underline text-center transition-all duration-300  hover:bg-black"
+              className="inline-block px-4 py-1 bg-black text-[#FFD700] border-2 border-[#FFD700] rounded-full font-inter font-bold text-xs no-underline text-center transition-all duration-300  hover:bg-black"
             >
               TALK TO ME
             </button>
           </div>
         </>
       )}
+
+      <RoomAudioRenderer muted={muted} />
     </div>
   );
 };
-export default Test;
+
+export default RetellaiAgent;

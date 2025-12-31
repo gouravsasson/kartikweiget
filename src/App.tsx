@@ -10,25 +10,26 @@ import { Analytics } from "@vercel/analytics/react";
 import axios from "axios";
 import Maya from "./components/Maya";
 import SobhaAgent from "./components/Sobha";
+import Test from "./components/Test";
 function App() {
-  useEffect(() => {
-    const localCountryCode = localStorage.getItem("countryCode");
-    if (!localCountryCode) {
-      const fetchIp = async () => {
-        const res = await axios.get("https://ipapi.co/json/");
-        localStorage.setItem("countryCode", res.data.country_calling_code);
-        localStorage.setItem("countryName", res.data.country_name);
-        localStorage.setItem("continentcode", res.data.country);
-        localStorage.setItem("city", res.data.city);
-      };
-      fetchIp();
-    }
-  }, []);
+  // useEffect(() => {
+  //   const localCountryCode = localStorage.getItem("countryCode");
+  //   if (!localCountryCode) {
+  //     const fetchIp = async () => {
+  //       const res = await axios.get("https://ipapi.co/json/");
+  //       localStorage.setItem("countryCode", res.data.country_calling_code);
+  //       localStorage.setItem("countryName", res.data.country_name);
+  //       localStorage.setItem("continentcode", res.data.country);
+  //       localStorage.setItem("city", res.data.city);
+  //     };
+  //     fetchIp();
+  //   }
+  // }, []);
   const [room] = useState(() => new Room({}));
 
-  const { type } = useWidgetContext();
+  // const { type } = useWidgetContext();
   // console.log("type", type);
-  // const [type, setType] = useState("thunder");
+  const [type, setType] = useState("test");
 
   return (
     <>
@@ -43,6 +44,7 @@ function App() {
         {type === "retell" && <Retelltest />}
         {type==="maya" && <Maya/>}
         {type==="sobha" && <SobhaAgent/>}
+        {type==="test" && <Test />  }
       </LiveKitRoom>
     </>
   );
