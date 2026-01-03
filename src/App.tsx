@@ -27,9 +27,9 @@ function App() {
   // }, []);
   const [room] = useState(() => new Room({}));
 
-  // const { type } = useWidgetContext();
+  const { type } = useWidgetContext();
   // console.log("type", type);
-  const [type, setType] = useState("test");
+  // const [type, setType] = useState("test");
 
   return (
     <>
