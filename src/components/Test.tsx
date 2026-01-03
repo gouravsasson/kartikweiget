@@ -49,7 +49,7 @@ const RetellaiAgent = () => {
   const [transcripts, setTranscripts] = useState("");
   const transcriptEmitterRef = useRef(new EventEmitter());
   
-  const baseUrl = "http://localhost:8000/api/create-room/";
+  const baseUrl = "https://g7tkl2x8-8000.inc1.devtunnels.ms/api/create-room/";
 
   // Setup transcript listener
   useEffect(() => {
