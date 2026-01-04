@@ -49,7 +49,7 @@ const RetellaiAgent = () => {
   const [transcripts, setTranscripts] = useState("");
   const transcriptEmitterRef = useRef(new EventEmitter());
   
-  const baseUrl = "https://g7tkl2x8-8000.inc1.devtunnels.ms/api/create-room/";
+  const baseUrl = "https://test.snowie.ai/api/create-room/";
 
   // Setup transcript listener
   useEffect(() => {
@@ -199,8 +199,8 @@ const RetellaiAgent = () => {
 
     try {
       const res = await axios.post(`${baseUrl}`, {
-        "agent_code":"9aecf88c-facd-4be0-b7a7-cc7090e862a3",
-        "schema_name": "gourav"
+        "agent_code":"1459eba5-17be-4b03-83c6-e7114859a00c",
+        "schema_name": "9cd3db15-5dbe-4199-aa8c-80c5701857f7"
       });
       console.log("Create room response:", res.data);
 
