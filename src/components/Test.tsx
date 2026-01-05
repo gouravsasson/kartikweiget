@@ -28,6 +28,7 @@ import {
 import axios from "axios";
 import CountryCode from "./CountryCode";
 import CryptoJS from "crypto-js";
+import { useWidgetContext } from "../constexts/WidgetContext";
 
 // Main Component
 const RetellaiAgent = () => {
@@ -48,6 +49,7 @@ const RetellaiAgent = () => {
   const [muted, setMuted] = useState(false);
   const [transcripts, setTranscripts] = useState("");
   const transcriptEmitterRef = useRef(new EventEmitter());
+  const {agent_id, schema}=useWidgetContext()
   
   const baseUrl = "https://test.snowie.ai/api/create-room/";
 
@@ -199,8 +201,8 @@ const RetellaiAgent = () => {
 
     try {
       const res = await axios.post(`${baseUrl}`, {
-        "agent_code":"1459eba5-17be-4b03-83c6-e7114859a00c",
-        "schema_name": "9cd3db15-5dbe-4199-aa8c-80c5701857f7"
+        "agent_code":`${agent_id}`,
+        "schema_name": `${schema}`
       });
       console.log("Create room response:", res.data);
 
