@@ -27,8 +27,8 @@ function App() {
   }, []);
   const [room] = useState(() => new Room({}));
 
-  const { type } = useWidgetContext();
-  console.log("type", type);
+  const { type, agent_id , schema} = useWidgetContext();
+  console.log("type", type ,agent_id , schema);
   // const [type, setType] = useState("test");
 
   return (
